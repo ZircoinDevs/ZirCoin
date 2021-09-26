@@ -6,7 +6,7 @@
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
-  <h3 align="center">ZirCoin</h3>
+  <h2 align="center">ZirCoin</h3>
 
   <p align="center">
     A fully decentralized cryptocurrency, powered by python!
@@ -56,9 +56,16 @@
 
 ZirCoin is a work-in-progress python cryptocurrency that utilises a decentralised p2p protocol for syncing the blockchain. The protocol consists of multiple nodes connected to the network, each hosting an aiohttp server. This allows nodes to communicate without port forwarding, and makes it easy to implement in other languages. It is many months in the making, and is finally nearing completion.
 
-* Easy to understand protocol
+### Videos
+
+<a href="https://www.youtube.com/channel/UCZXpvhJqJjFLrQztQnn5nlQ">More information + Development timelapse</a>
+
+### Key benefits
+
+* Easy to understand protocol using http
 * Fully decentralized network
 * Frequent updates + patches
+* Easily minable
 
 ### Built With
 * [Python3](https://python.org)
