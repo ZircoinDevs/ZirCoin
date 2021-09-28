@@ -14,11 +14,11 @@
     <a href="https://discord.gg/d3NwZ5GzEW"><strong>Join the discord community»</strong></a>
     <br />
     <br />
-    <a href="https://github.com/othneildrew/Best-README-Template">Source Code</a>
+    <a href="https://github.com/ZirCoinDevs/ZirCoin">Source Code</a>
     ·
-    <a href="https://github.com/othneildrew/Best-README-Template/issues">Report Bug</a>
+    <a href="https://github.com/ZirCoinDevs/ZirCoin/issues">Report Bug</a>
     ·
-    <a href="https://github.com/othneildrew/Best-README-Template/issues">Request Feature</a>
+    <a href="https://github.com/ZirCoinDevs/ZirCoin/issues">Request Feature</a>
   </p>
 </p>
 
@@ -56,6 +56,8 @@
 
 ZirCoin is a work-in-progress python cryptocurrency that utilises a decentralised p2p protocol for syncing the blockchain. The protocol consists of multiple nodes connected to the network, each hosting an aiohttp server. This allows nodes to communicate without port forwarding, and makes it easy to implement in other languages. It is many months in the making, and is finally nearing completion.
 
+IMPORTANT NOTE: The source code of ZirCoin is not in this repo yet. This is because some vital aspects are still being worked on. The source code release will be soon!
+
 ### Videos
 
 <a href="https://www.youtube.com/channel/UCZXpvhJqJjFLrQztQnn5nlQ">More information + Development timelapse</a>
@@ -73,7 +75,6 @@ ZirCoin is a work-in-progress python cryptocurrency that utilises a decentralise
 * [Requests](https://docs.python-requests.org/en/latest/)
 
 
-
 <!-- GETTING STARTED -->
 ## Getting Started
 
@@ -87,28 +88,21 @@ Here is how to get started with ZirCoin.
 	 ```sh
   sudo apt-get install python3
   ```
-* Aiohttp
-  ```sh
-  python3 -m pip install aiohttp
-  ```
-* Requests
-  ```sh
-  python3 -m pip install requests
-  ```
-* Termcolor
-  ```sh
-  python3 -m pip install termcolor
-  ```
-* JsonSchema
-	```sh
-  python3 -m pip install jsonschema
-  ```
 
 ### Installation
+- Clone the repo
  ```sh
   git clone https://github.com/ZircoinDevs/ZirCoin
   ```
+  - Install requirements
+  ```sh
+  python3 -m pip install requirements.txt
+  ```
+  If you get a command not found error, try with **python** or **py**
+
   
+<br/>
+
 <!-- USAGE EXAMPLES -->
 ## Usage
 
@@ -124,7 +118,12 @@ Run:
 
 See the [open issues](https://github.com/ZircoinDevs/ZirCoin/issues) for a list of proposed features (and known issues).
 
+<!-- GETINVOLVED -->
+## Get involved!
 
+If you would like to meet the community and/or help out with code and finding bugs, join the official discord!
+
+[Join the discord!](https://discord.gg/d3NwZ5GzEW)
 
 <!-- CONTRIBUTING -->
 ## Contributing
