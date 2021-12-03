@@ -1,0 +1,5 @@
+termcolor
+requests
+aiohttp
+pynacl
+colorama
