@@ -205,7 +205,6 @@ class Blockchain():
             if verbose:
                 bc.error(
                     "Block #" + str(block["height"]) + " is invalid: Height is incorrect")
-                print(block["height"], self.height)
             return False
 
         if self.last_block:

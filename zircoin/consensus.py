@@ -86,14 +86,12 @@ class Consensus:
 
                     # if the blockchain has been marked as invalid, move on
                     if invalid_chain:
-                        print("invalid chain")
                         continue
 
                     # if no hashes match, create a new empty blockchain and sync to that
                     if not peer_block_height == self.blockchain.height:
                         new_blockchain = Blockchain(
                             self.blockchain.blockchain_id, create_genesis_block=False)
-                        print("NEW BLOCKCHAIN")
 
                         for blockhash in blockinv:
                             block = self.get_json(peer, f"/block/{blockhash}")

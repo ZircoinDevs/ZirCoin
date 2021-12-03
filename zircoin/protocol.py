@@ -83,7 +83,6 @@ class Protocol:
         port = response["port"]
         ip = request.transport.get_extra_info('peername')[0]
         addr = (ip, port)
-        print("Pinged by: " + str(addr))
         self.connection_pool.add_tuple_addr(addr)
         return web.Response(text="pong")
 
