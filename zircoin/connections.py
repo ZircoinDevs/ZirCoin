@@ -28,6 +28,19 @@ class ConnectionPool:
 
         logger.info("Initialised connection pool")
 
+    @property
+    def node_ids(self):
+        node_ids = []
+        for peer in self.pool:
+            try:
+                info = requests.get(addr + "/info", timeout=0.5).json()
+            except self.connection_errors:
+                continue
+
+            node_ids.append(info["node_id"])
+
+        return node_ids
+
     def add_seed_nodes(self):
         if "seed_nodes" in self.config:
             for node in self.config["seed_nodes"]:
@@ -103,6 +116,9 @@ class ConnectionPool:
 
         # prevents connection to self
         if info["node_id"] == self.node_id:
+            return False
+        # prevents nodes being added multiple times
+        if info["node_id"] in self.node_ids:
             return False
 
         if info["protocol"].split('.', 2)[0] != PROTOCOL_VERSION.split('.')[0]:
