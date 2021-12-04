@@ -13,11 +13,12 @@ bc = Logger("blockchain")
 
 
 class Blockchain():
-    def __init__(self, blockchain_id, create_genesis_block=True):
+    def __init__(self, blockchain_id, create_genesis_block=True, autosave=True):
         self.chain = []
         self.transaction_pool = TransactionPool(self)
         self.target = "00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
         self.blockchain_id = blockchain_id
+        self.autosave = autosave
         if create_genesis_block:
             self.chain.append(self.make_genesis_block())
 
@@ -158,7 +159,8 @@ class Blockchain():
         if self.validate(block, verbose=verbose):
             self.chain.append(block)
             self.transaction_pool.update_pool(self.chain)
-            self.save()
+            if self.autosave:
+                self.save()
             return True
         else:
             return False

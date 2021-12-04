@@ -91,7 +91,7 @@ class Consensus:
                     # if no hashes match, create a new empty blockchain and sync to that
                     if not peer_block_height == self.blockchain.height:
                         new_blockchain = Blockchain(
-                            self.blockchain.blockchain_id, create_genesis_block=False)
+                            self.blockchain.blockchain_id, create_genesis_block=False, autosave=False)
 
                         for blockhash in blockinv:
                             block = self.get_json(peer, f"/block/{blockhash}")
@@ -114,8 +114,6 @@ class Consensus:
                                     self.logger.info(
                                         "Cleared blockchain due to fraudulent blocks.")
                                     break
-
-                        print("NEW BLOCKCHAIN")
 
             self.sync_status["syncing"] = False
             self.sync_status["download_node"] = None
