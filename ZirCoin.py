@@ -7,6 +7,7 @@ from zircoin.protocol import Protocol
 from zircoin.connections import ConnectionPool
 from zircoin.blockchain import Blockchain
 from zircoin.utils import test_hashrate
+from zircoin.plotting import wealth_distrobution
 
 import heapq
 import argparse
@@ -225,6 +226,9 @@ def menu():
         megahashes = test_hashrate() / 1000000
         print(f"Your hashrate: {round(megahashes, 2)} MH/s")
 
+    def graphs():
+        wealth_distrobution(blockchain)
+
     options = {
         'w': {"handler": wallet_info, "name": "Wallet"},
         'b': {"handler": get_wallet_balance, "name": "Check balance"},
@@ -237,6 +241,7 @@ def menu():
         '2': {"handler": display_connection_pool, "name": "Connection pool"},
         '3': {"handler": display_peer_info, "name": "Peer info"},
         '4': {"handler": hashrate, "name": "Test hashrate"},
+        '5': {"handler": graphs, "name": "Graphs"},
     }
 
     banner = open("data/banner.txt", "r").read()
