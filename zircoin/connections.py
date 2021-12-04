@@ -33,7 +33,7 @@ class ConnectionPool:
         node_ids = []
         for peer in self.pool:
             try:
-                info = requests.get(addr + "/info", timeout=0.5).json()
+                info = requests.get(peer + "/info", timeout=0.5).json()
             except self.connection_errors:
                 continue
 
