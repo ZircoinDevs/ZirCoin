@@ -6,6 +6,7 @@ from zircoin.consensus import Consensus
 from zircoin.protocol import Protocol
 from zircoin.connections import ConnectionPool
 from zircoin.blockchain import Blockchain
+from zircoin.utils import test_hashrate
 
 import heapq
 import argparse
@@ -219,6 +220,11 @@ def menu():
         else:
             print("Up to date\n")
 
+    def hashrate():
+        print("Testing...")
+        megahashes = test_hashrate() / 1000000
+        print(f"Your hashrate: {round(megahashes, 2)} MH/s")
+
     options = {
         'w': {"handler": wallet_info, "name": "Wallet"},
         'b': {"handler": get_wallet_balance, "name": "Check balance"},
@@ -230,6 +236,7 @@ def menu():
         '1': {"handler": display_blockchain, "name": "Display blockchain"},
         '2': {"handler": display_connection_pool, "name": "Connection pool"},
         '3': {"handler": display_peer_info, "name": "Peer info"},
+        '4': {"handler": hashrate, "name": "Test hashrate"},
     }
 
     banner = open("data/banner.txt", "r").read()
@@ -239,6 +246,7 @@ def menu():
         for option in options:
             if option == '1':
                 print("\n")
+
             print(Fore.CYAN + option + ") " + Style.RESET_ALL +
                   options[option]["name"])
 
