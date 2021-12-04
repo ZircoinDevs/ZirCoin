@@ -94,7 +94,8 @@ def menu():
         balance = blockchain.get_balance(address)
         print(f"Balance: {balance} ◈ ZIR")
 
-    def network_stats():
+    def zircoin_stats():
+        # richlist
         wallets = {}
         for block in blockchain.chain:
             for transaction in block["transactions"]:
@@ -103,11 +104,36 @@ def menu():
         for wallet in wallets:
             wallets[wallet] = blockchain.get_balance(wallet)
 
-        richest_wallets = heapq.nlargest(5, wallets, key=wallets.get)
+        richest_wallets = heapq.nlargest(10, wallets, key=wallets.get)
 
         print("Rich list: \n")
         for i, wallet in enumerate(richest_wallets):
             print(f"{str(i+1)} - {wallet} [{str(wallets[wallet])} ZIR]")
+
+        # active miners
+
+        blocks = blockchain.get_blocks_after_timestamp(time.time() - 60*20)
+        miners = set()
+
+        for block in blocks:
+            miners.add(block["transactions"][0]["receiver"])
+
+        print("\nActive miners: ")
+        for miner in miners:
+            print(miner)
+
+        # circulating supply
+
+        supply = 0
+        wallets = set()
+        for block in blockchain.chain:
+            for transaction in block["transactions"]:
+                wallets.add(transaction["receiver"])
+
+        for wallet in wallets:
+            supply += (blockchain.get_balance(wallet))
+
+        print("\nCoins in circulation: " + str(supply))
 
     def add_transaction():
         print("Create a transaction\n")
@@ -176,7 +202,7 @@ def menu():
     options = {
         'w': {"handler": wallet_info, "name": "Wallet"},
         'b': {"handler": get_wallet_balance, "name": "Check balance"},
-        'r': {"name": "Rich list", "handler": network_stats},
+        'e': {"name": "Economy stats", "handler": zircoin_stats},
         'm': {"handler": mine, "name": "Mine"},
         't': {"handler": add_transaction, "name": "Transfer"},
         's': {"handler": display_sync_status, "name": "Sync status"},

@@ -357,10 +357,10 @@ class Blockchain():
     def get_blocks_after_timestamp(self, timestamp):
         blocks = []
         for block in self.chain:
-            if block["timestamp"] < timestamp:
+            if block["time"] > timestamp:
                 blocks.append(block)
-            else:
-                return blocks
+
+        return blocks
 
     def get_balance(self, public_key):
         balance = 0.0
