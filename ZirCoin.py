@@ -135,6 +135,26 @@ def menu():
 
         print("\nCoins in circulation: " + str(supply))
 
+        # average block time
+
+        start_time = blockchain.chain[0]["time"]
+        end_time = blockchain.chain[-1]["time"]
+
+        total_time = end_time - start_time
+        block_time = total_time / blockchain.height
+
+        print("\nAverage block time: " + str(round(block_time)) + "s")
+
+        # time until halving
+
+        next_halving = blockchain.height + (4000 - blockchain.height % 4000)
+        blocks_until_halving = next_halving - blockchain.height
+        estimated_time_seconds = block_time * blocks_until_halving
+        estimated_time_days = estimated_time_seconds/60/60/24
+
+        print(
+            f"\nTime until next halving: {blocks_until_halving} blocks, aprox. {round(estimated_time_days)} days")
+
     def add_transaction():
         print("Create a transaction\n")
         receiver = input("Receiver: ")
