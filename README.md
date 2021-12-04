@@ -96,7 +96,7 @@ Here is how to get started with ZirCoin.
   ```
   - Install requirements
   ```sh
-  python3 -m pip install requirements.txt
+  python3 -m pip install -r requirements.txt
   ```
   If you get a command not found error, try with **python** or **py**
 
