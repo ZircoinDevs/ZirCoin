@@ -7,7 +7,7 @@ from zircoin.protocol import Protocol
 from zircoin.connections import ConnectionPool
 from zircoin.blockchain import Blockchain
 from zircoin.utils import test_hashrate
-from zircoin.plotting import wealth_distrobution
+from zircoin.plotting import wealth_distrobution, transaction_volume, transaction_quantity, coin_supply, difficulty, block_time
 
 import heapq
 import argparse
@@ -227,7 +227,30 @@ def menu():
         print(f"Your hashrate: {round(megahashes, 2)} MH/s")
 
     def graphs():
-        wealth_distrobution(blockchain)
+        opt = input("""
+ZirCoin Graphs
+
+1) Wealth distrobution
+2) Transaction Volume
+3) Transaction quantity
+4) Circulating supply
+5) Mining difficulty
+6) Block time
+
+>> """)
+        
+        if opt == "1":
+            wealth_distrobution(blockchain)
+        elif opt == "2":
+            transaction_volume(blockchain)
+        elif opt == "3":
+            transaction_quantity(blockchain)
+        elif opt == "4":
+            coin_supply(blockchain)
+        elif opt == "5":
+            difficulty(blockchain)
+        elif opt == "6":
+            block_time(blockchain)
 
     options = {
         'w': {"handler": wallet_info, "name": "Wallet"},
