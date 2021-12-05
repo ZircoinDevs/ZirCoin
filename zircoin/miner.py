@@ -12,7 +12,7 @@ class Miner:
         self.config = config
         self.consensus = consensus
     
-    def mine_threaded():
+    def mine_threaded(self):
         while True:
             try:
                 if self.consensus.sync_status["syncing"]:
@@ -44,4 +44,4 @@ class Miner:
     def mine(self):
         logger.info("⛏  Mining now...")
         for i in range(1,int(multiprocessing.cpu_count()),1):
-            multiprocessing.Process(target=Miner.mine_threaded()).start()
+            multiprocessing.Process(target=Miner.mine_threaded(self)).start()
