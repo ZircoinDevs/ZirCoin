@@ -10,6 +10,7 @@ from zircoin.utils import test_hashrate
 from zircoin.plotting import wealth_distrobution, transaction_volume, transaction_quantity, coin_supply, difficulty, block_time
 
 import heapq
+import string
 import argparse
 import json
 import time
@@ -174,6 +175,15 @@ def menu():
         if amount > blockchain.get_balance(wallet.public_key):
             logger.info("Insufficient balance")
             return False
+
+        if len(receiver) != 64:
+            logger.info("Invalid receiver")
+            return False
+        
+        for char in receiver:
+            if char not in string.ascii_lowercase + string.hexdigits:
+                logger.info("Invalid receiver")
+                return False
 
         transaction = blockchain.transaction_pool.create_transaction(
             wallet.private_key,
