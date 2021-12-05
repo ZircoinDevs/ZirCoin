@@ -189,6 +189,28 @@ def menu():
         else:
             logger.info("Transaction invalid.")
 
+    def transaction_history():
+        transactions = []
+
+        for block in blockchain.chain:
+            for transaction in block["transactions"]:
+                if transaction["sender"] or transaction["receiver"] == wallet.public_key:
+                    transactions.append(transaction)
+
+        print("Transaction History\n")
+        for transaction in transactions:
+            receiver = transaction["receiver"]
+            sender = transaction["sender"]
+            amount = transaction["amount"]
+
+            if transaction["type"] == "coinbase":
+                continue
+            elif transaction["sender"] == wallet.public_key:
+                print(f"{amount} {(10-len(str(amount)))*' '}| You --> {receiver}")
+            else:
+                print(f"{amount} {(10-len(str(amount)))*' '}| {sender} --> You")
+
+
     def display_blockchain():
         print(str(blockchain))
 
@@ -258,6 +280,7 @@ ZirCoin Graphs
         'e': {"name": "Economy stats", "handler": zircoin_stats},
         'm': {"handler": mine, "name": "Mine"},
         't': {"handler": add_transaction, "name": "Transfer"},
+        'h': {"handler": transaction_history, "name": "Transaction history"},
         's': {"handler": display_sync_status, "name": "Sync status"},
 
         '1': {"handler": display_blockchain, "name": "Display blockchain"},
