@@ -11,9 +11,6 @@
   <p align="center">
     A fully decentralized cryptocurrency, powered by python!
     <br />
-    <a href="https://discord.gg/d3NwZ5GzEW"><strong>Join the discord community»</strong></a>
-    <br />
-    <br />
     <a href="https://github.com/ZirCoinDevs/ZirCoin">Source Code</a>
     ·
     <a href="https://github.com/ZirCoinDevs/ZirCoin/issues">Report Bug</a>
@@ -22,7 +19,7 @@
   </p>
 </p>
 
-
+<br>
 
 <!-- TABLE OF CONTENTS -->
 <details open="open">
@@ -54,17 +51,18 @@
 ## About The Project
 
 
-ZirCoin is a work-in-progress python cryptocurrency that utilises a decentralised p2p protocol for syncing the blockchain. The protocol consists of multiple nodes connected to the network, each hosting an aiohttp server. This allows nodes to communicate without port forwarding, and makes it easy to implement in other languages. It is many months in the making, and is finally nearing completion.
+ZirCoin is a work-in-progress python cryptocurrency that utilises a decentralised p2p protocol built on http for syncing the blockchain. Each fullnode hosts thair local best blockchain, and clients such as miners use http requests to communicate and download or broadcast blocks. This makes it incredibly simple to implement in other languages. It is many months in the making, and is finally nearing mainnet.
 
 IMPORTANT NOTE: ZirCoin is currently in testnet, so there are many things still to be worked on.
 
-### Videos
+### Resources
 
-<a href="https://www.youtube.com/channel/UCZXpvhJqJjFLrQztQnn5nlQ">More information + Development timelapse</a>
+<a href="https://discord.gg/RW6kskN4vu">Official discord server with more information, announcements, and a hepful community!</a>
+<a href="https://www.youtube.com/channel/UCZXpvhJqJjFLrQztQnn5nlQ">Development timelapse</a>
 
 ### Key benefits
 
-* Easy to understand protocol using http
+* Easy to understand http protocol
 * Fully decentralized network
 * Frequent updates + patches
 * Easily minable
@@ -100,23 +98,36 @@ Here is how to get started with ZirCoin.
   ```
   If you get a command not found error, try with **python** or **py**
 
+  Install matplotlib if you would like to use the statistics functionality.
+  ```sh
+  python3 -m pip install matplotlib
+  ```
+
   
 <br/>
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Run:
- ```sh
-  python3 ZirCoin.py
-  ```
-<img src="images/cli.png" alt="Cli" width="240" height="200">
+Run a wallet/miner:
+```sh
+python3 ZirCoin.py
+```
+
+Run as a fullnode:
+```sh
+python3 ZirCoin.py -f
+```
++ forward port 2227
+
+<img src="images/cli.png" alt="Cli" width="265" height="200">
+<img src="images/graphs.png" alt="Statistics" width="280" height="200">
 
 
 <!-- ROADMAP -->
 ## Roadmap
 
-See the [open issues](https://github.com/ZircoinDevs/ZirCoin/issues) for a list of proposed features (and known issues).
+See the [testnet project](https://github.com/ZircoinDevs/ZirCoin/projects/1) for a list of features being worked on.
 
 <!-- GETINVOLVED -->
 ## Get involved!
