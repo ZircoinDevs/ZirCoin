@@ -90,7 +90,7 @@ Here is how to get started with ZirCoin.
 ### Installation
 - Clone the repo
  ```sh
-  git clone https://github.com/ZircoinDevs/ZirCoin
+  git clone https://github.com/ZircoinDevs/ZirCoin.git
   ```
   - Install requirements
   ```sh
