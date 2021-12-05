@@ -8,6 +8,7 @@ from zircoin.connections import ConnectionPool
 from zircoin.blockchain import Blockchain
 from zircoin.utils import test_hashrate
 from zircoin.plotting import wealth_distrobution, transaction_volume, transaction_quantity, coin_supply, difficulty, block_time
+from multiprocessing import cpu_count, Process
 
 import heapq
 import string
@@ -83,7 +84,8 @@ def menu():
 
     def mine():
         if not consensus.sync_status["syncing"]:
-            miner.mine()
+            for i in range(1,cpu_count(),1):
+                Process(target=miner.mine()).start()
         else:
             logger.info("Cannot start mining: syncing is in progress.")
 
