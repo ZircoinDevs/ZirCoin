@@ -44,4 +44,4 @@ class Miner:
     def mine(self):
         logger.info("⛏  Mining now...")
         for i in range(1,int(multiprocessing.cpu_count()),1):
-            multiprocessing.Process(target=mine_threaded()).start()
+            multiprocessing.Process(target=Miner.mine_threaded()).start()
