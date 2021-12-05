@@ -18,7 +18,7 @@ class Miner:
                 if self.consensus.sync_status["syncing"]:
                     logger.info("Waiting for blockchain sync to complete...")
                     while self.consensus.sync_status["syncing"]:
-                        continue
+                        time.sleep(0.5)
                     logger.info("Sync completed.")
 
                 block = self.blockchain.mine_new_block(self.wallet)
