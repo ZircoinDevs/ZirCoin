@@ -83,7 +83,7 @@ def menu():
 
     def mine():
         if not consensus.sync_status["syncing"]:
-            Process(target=miner.mine()).start()
+            miner.mine()
         else:
             logger.info("Cannot start mining: syncing is in progress.")
 
