@@ -1,5 +1,6 @@
 from .logger import Logger
 from time import time
+import multiprocessing
 logger = Logger("miner")
 
 
@@ -41,6 +42,6 @@ class Miner:
                 break
 
     def mine(self):
-        from multiprocessing import cpu_count, Process
         logger.info("⛏  Mining now...")
-        Process(target=mine_threaded()).start()
+        for i in range(1,int(multiprocessing.cpu_count()),1):
+            multiprocessing.Process(target=mine_threaded()).start()
