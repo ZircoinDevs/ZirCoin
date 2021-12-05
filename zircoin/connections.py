@@ -31,7 +31,7 @@ class ConnectionPool:
     @property
     def node_ids(self):
         node_ids = []
-        for peer in self.pool:
+        for peer in self.pool.copy():
             try:
                 info = requests.get(peer + "/info", timeout=0.5).json()
             except self.connection_errors:
