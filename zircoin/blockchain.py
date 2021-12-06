@@ -397,10 +397,6 @@ class Blockchain():
 
         block_to_mine = self.height + 1
 
-        #if block_to_mine == block:                                         #add block as an argument to use this
-        #    miner.info("✗ Block already being mined")
-        #    return None
-
         block = self.make_block(wallet)
         while not self.valid_pow(block):
             if self.height >= block_to_mine:
