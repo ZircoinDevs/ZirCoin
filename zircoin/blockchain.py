@@ -5,6 +5,8 @@ from hashlib import sha256
 from time import time
 from random import getrandbits
 
+from os.path import exists
+from os import mknod
 from .logger import Logger
 from .transactions import TransactionPool
 
@@ -52,21 +54,25 @@ class Blockchain():
             json.dump(self.chain, f)
 
     def load(self):
-        with open("blockchain.json", "r") as f:
-            try:
-                blockchain = json.load(f)
-            except json.decoder.JSONDecodeError:
-                return False
+        if exists("blockchain.json"):
+            with open("blockchain.json", "r") as f:
+                try:
+                    blockchain = json.load(f)
+                except json.decoder.JSONDecodeError:
+                    return False
 
-            if len(blockchain) > len(self.chain):
-                self.chain = blockchain
-                bc.info("Loaded blockchain from blockchain.json")
-                self.target = self.last_block["target"]
-                self.calculate_target()
-            else:
-                return False
+                if len(blockchain) > len(self.chain):
+                    self.chain = blockchain
+                    bc.info("Loaded blockchain from blockchain.json")
+                    self.target = self.last_block["target"]
+                    self.calculate_target()
+                else:
+                    return False
 
-        return True
+            return True
+        else:
+            mknod("blockchain.json")
+            return True
 
     def make_genesis_block(self):
         block = {
