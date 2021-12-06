@@ -1,4 +1,3 @@
-#this is a test commit lul
 from zircoin.wallet import Wallet
 from zircoin.miner import Miner
 from zircoin.logger import Logger
