@@ -11,16 +11,15 @@ class Miner:
         self.wallet = wallet
         self.config = config
         self.consensus = consensus
-    
+
     def mine_threaded(self):
-        while True:
-            try:
+        try:
+            while True:
                 if self.consensus.sync_status["syncing"]:
                     logger.info("Waiting for blockchain sync to complete...")
                     while self.consensus.sync_status["syncing"]:
                         sleep(0.5)
                     logger.info("Sync completed.")
-
                 block = self.blockchain.mine_new_block(self.wallet)
                 if not block:
                     continue
@@ -37,16 +36,18 @@ class Miner:
                         height = block["height"]
                         logger.info(f"✗ Block #{height} not accepted")
                         break
-
-            except KeyboardInterrupt:
-                break
+        except KeyboardInterrupt:
+            return
 
     def mine(self):
         logger.info("⛏  Mining now...")
-        processes = []
-        for i in range(0,int(multiprocessing.cpu_count()),1):
-            process = multiprocessing.Process(target=Miner.mine_threaded(self))
-            processes.append(process)
-            process.start()
-            print("For now, just do a ctrl+c as many times as there are threads in your CPU.")
-            
+        try:
+            processes = []
+            for i in range(0,int(multiprocessing.cpu_count()),1):
+                process = multiprocessing.Process(target=self.mine_threaded)
+                processes.append(process)
+                process.start()
+            for process in processes:
+                process.join()
+        except KeyboardInterrupt:
+            return
