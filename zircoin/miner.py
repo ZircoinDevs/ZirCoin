@@ -43,5 +43,10 @@ class Miner:
 
     def mine(self):
         logger.info("⛏  Mining now...")
-        for i in range(1,int(multiprocessing.cpu_count()),1):
-            multiprocessing.Process(target=Miner.mine_threaded(self)).start()
+        processes = []
+        for i in range(0,int(multiprocessing.cpu_count()),1):
+            process = multiprocessing.Process(target=Miner.mine_threaded(self))
+            processes.append(process)
+            process.start()
+            print("For now, just do a ctrl+c as many times as there are threads in your CPU."")
+            
