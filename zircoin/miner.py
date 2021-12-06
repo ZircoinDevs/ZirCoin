@@ -1,5 +1,5 @@
 from .logger import Logger
-from time import time
+from time import time, sleep
 import multiprocessing
 logger = Logger("miner")
 
@@ -18,7 +18,7 @@ class Miner:
                 if self.consensus.sync_status["syncing"]:
                     logger.info("Waiting for blockchain sync to complete...")
                     while self.consensus.sync_status["syncing"]:
-                        time.sleep(0.5)
+                        sleep(0.5)
                     logger.info("Sync completed.")
 
                 block = self.blockchain.mine_new_block(self.wallet)
