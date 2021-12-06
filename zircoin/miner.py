@@ -1,5 +1,6 @@
 from .logger import Logger
 from time import time, sleep
+import multiprocessing
 logger = Logger("miner")
 
 
@@ -10,9 +11,8 @@ class Miner:
         self.wallet = wallet
         self.config = config
         self.consensus = consensus
-
-    def mine(self):
-        logger.info("⛏  Mining now...")
+    
+    def mine_threaded(self):
         while True:
             try:
                 if self.consensus.sync_status["syncing"]:
@@ -40,3 +40,13 @@ class Miner:
 
             except KeyboardInterrupt:
                 break
+
+    def mine(self):
+        logger.info("⛏  Mining now...")
+        processes = []
+        for i in range(0,int(multiprocessing.cpu_count()),1):
+            process = multiprocessing.Process(target=Miner.mine_threaded(self))
+            processes.append(process)
+            process.start()
+            print("For now, just do a ctrl+c as many times as there are threads in your CPU."")
+            
