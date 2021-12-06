@@ -48,5 +48,5 @@ class Miner:
             process = multiprocessing.Process(target=Miner.mine_threaded(self))
             processes.append(process)
             process.start()
-            print("For now, just do a ctrl+c as many times as there are threads in your CPU."")
+            print("For now, just do a ctrl+c as many times as there are threads in your CPU.")
             
