@@ -1,6 +1,5 @@
 from .logger import Logger
 from time import time, sleep
-import multiprocessing
 logger = Logger("miner")
 
 
@@ -12,14 +11,16 @@ class Miner:
         self.config = config
         self.consensus = consensus
 
-    def mine_threaded(self):
-        try:
-            while True:
+    def mine(self):
+        logger.info("⛏  Mining now...")
+        while True:
+            try:
                 if self.consensus.sync_status["syncing"]:
                     logger.info("Waiting for blockchain sync to complete...")
                     while self.consensus.sync_status["syncing"]:
                         sleep(0.5)
                     logger.info("Sync completed.")
+
                 block = self.blockchain.mine_new_block(self.wallet)
                 if not block:
                     continue
@@ -36,18 +37,6 @@ class Miner:
                         height = block["height"]
                         logger.info(f"✗ Block #{height} not accepted")
                         break
-        except KeyboardInterrupt:
-            return
 
-    def mine(self):
-        logger.info("⛏  Mining now...")
-        try:
-            processes = []
-            for i in range(0,int(multiprocessing.cpu_count()),1):
-                process = multiprocessing.Process(target=self.mine_threaded)
-                processes.append(process)
-                process.start()
-            for process in processes:
-                process.join()
-        except KeyboardInterrupt:
-            return
+            except KeyboardInterrupt:
+                break
