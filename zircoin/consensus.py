@@ -121,6 +121,14 @@ class Consensus:
                     return False
         return True
 
+    def download_latest_block(self, node):
+        block = self.get_json(node, "/latest-block")
+        if not block:
+            return False
+
+        if not self.blockchain.add(block):
+            return False
+
     def consensus(self):
         while True:
             for node in self.connection_pool.get_alive_peers(20):
@@ -132,6 +140,11 @@ class Consensus:
                 node_block_height = node_info["block_height"]
 
                 if node_block_height > self.blockchain.height:
+
+                    if node_block_height - self.blockchain.height == 1:
+                        if self.download_latest_block(node):
+                            continue
+
                     # get a list of the  node's block hashes
                     blockinv = self.get_json(node, "/blockinv")
 
