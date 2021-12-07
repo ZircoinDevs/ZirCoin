@@ -201,10 +201,10 @@ def menu():
 
         for block in blockchain.chain:
             for transaction in block["transactions"]:
-                if transaction["sender"] or transaction["receiver"] == wallet.public_key:
+                if transaction["sender"] == wallet.public_key or transaction["receiver"] == wallet.public_key:
                     transactions.append(transaction)
 
-        print("Transaction History\n")
+        print("\nTransaction History\n")
         for transaction in transactions:
             receiver = transaction["receiver"]
             sender = transaction["sender"]
