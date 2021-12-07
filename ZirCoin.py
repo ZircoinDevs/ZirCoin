@@ -82,10 +82,7 @@ def menu():
     run = True
 
     def mine():
-        if not consensus.sync_status["syncing"]:
-            miner.mine()
-        else:
-            logger.info("Cannot start mining: syncing is in progress.")
+        miner.mine()
 
     def wallet_info():
         print(f"Wallet address: {wallet.public_key}")
