@@ -58,6 +58,7 @@ IMPORTANT NOTE: ZirCoin is currently in testnet, so there are many things still 
 ### Resources
 
 <a href="https://discord.gg/RW6kskN4vu">Official discord server with more information, announcements, and a hepful community!</a>
+
 <a href="https://www.youtube.com/channel/UCZXpvhJqJjFLrQztQnn5nlQ">Development timelapse</a>
 
 ### Key benefits
