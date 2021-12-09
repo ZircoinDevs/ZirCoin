@@ -110,6 +110,9 @@ def menu():
         for i, wallet in enumerate(richest_wallets):
             print(f"{str(i+1)} - {wallet} [{str(wallets[wallet])} ZIR]")
 
+        # wallets
+        print("\nWallet count: " + str(len(wallets)))
+
         # active miners
 
         blocks = blockchain.get_blocks_after_timestamp(time.time() - 60*20)
@@ -125,13 +128,9 @@ def menu():
         # circulating supply
 
         supply = 0
-        wallets = set()
-        for block in blockchain.chain:
-            for transaction in block["transactions"]:
-                wallets.add(transaction["receiver"])
 
-        for wallet in wallets:
-            supply += (blockchain.get_balance(wallet))
+        for wallet, balance in wallets.items():
+            supply += balance
 
         print("\nCoins in circulation: " + str(supply))
 
@@ -176,7 +175,7 @@ def menu():
         if len(receiver) != 64:
             logger.info("Invalid receiver")
             return False
-        
+
         for char in receiver:
             if char not in string.ascii_lowercase + string.hexdigits:
                 logger.info("Invalid receiver")
@@ -216,7 +215,6 @@ def menu():
                 print(f"{amount} {(10-len(str(amount)))*' '}| You --> {receiver}")
             else:
                 print(f"{amount} {(10-len(str(amount)))*' '}| {sender} --> You")
-
 
     def display_blockchain():
         print(str(blockchain))
@@ -267,7 +265,7 @@ ZirCoin Graphs
 6) Block time
 
 >> """)
-        
+
         if opt == "1":
             wealth_distrobution(blockchain)
         elif opt == "2":
