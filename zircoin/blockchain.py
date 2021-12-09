@@ -6,7 +6,6 @@ from time import time
 from random import getrandbits
 
 from os.path import exists
-from os import mknod
 from .logger import Logger
 from .transactions import TransactionPool
 
@@ -71,7 +70,7 @@ class Blockchain():
 
             return True
         else:
-            mknod("blockchain.json")
+            open("blockchain.json",w).close()
             return True
 
     def make_genesis_block(self):
