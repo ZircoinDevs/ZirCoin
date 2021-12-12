@@ -414,7 +414,6 @@ class Blockchain():
             return None
 
         height = block["height"]
-        miner.info(f"✓ Mined block #{height} in {round(time_taken, 2)}s")
 
         return block
 

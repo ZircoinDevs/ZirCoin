@@ -30,13 +30,21 @@ class Miner:
                 else:
                     self.protocol.broadcast_block(block)
 
+                mined_block = True
+                height = block["height"]
+                _hash = block["hash"]
+
                 # if the block is not accepted in 5 seconds, start mining a new block
                 timeout = time() + 5
                 while not self.blockchain.contains_hash(block["hash"]):
                     if time() >= timeout or self.blockchain.height > block["height"]:
-                        height = block["height"]
                         logger.info(f"✗ Block #{height} not accepted")
+                        mined_block = False
                         break
+
+                if mined_block:
+                    logger.info(
+                        f"✓ Mined block #{height} ({_hash})")
 
             except KeyboardInterrupt:
                 break
