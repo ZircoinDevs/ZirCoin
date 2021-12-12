@@ -70,7 +70,7 @@ class Blockchain():
 
             return True
         else:
-            open("blockchain.json","a").close()
+            open("blockchain.json", "a").close()
             return True
 
     def make_genesis_block(self):
@@ -413,7 +413,6 @@ class Blockchain():
             return None
 
         height = block["height"]
-        miner.info(f"✓ Mined block #{height} in {round(time_taken, 2)}s")
 
         return block
 
