@@ -31,7 +31,7 @@ class Wallet:
         return True
 
     def create_new_wallet(self, wallet_file):
-        os.mknod(wallet_file)
+        open(wallet_file,"a").close()
         keys = self.generate_keys()
         try:
             with open(wallet_file, "w") as f:

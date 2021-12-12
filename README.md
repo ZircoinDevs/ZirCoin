@@ -58,6 +58,7 @@ IMPORTANT NOTE: ZirCoin is currently in testnet, so there are many things still 
 ### Resources
 
 <a href="https://discord.gg/RW6kskN4vu">Official discord server with more information, announcements, and a hepful community!</a>
+
 <a href="https://www.youtube.com/channel/UCZXpvhJqJjFLrQztQnn5nlQ">Development timelapse</a>
 
 ### Key benefits
@@ -145,7 +146,7 @@ Contributions are what make the open source community such an amazing place to l
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the GNU GPLv3 License. See `LICENSE` for more information.
 
 
 
