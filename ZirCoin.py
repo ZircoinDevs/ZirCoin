@@ -241,10 +241,13 @@ def menu():
         if consensus.sync_status["syncing"]:
             print("Syncing...\n")
             progress = consensus.sync_status["progress"]
-            print("Progress: " + str(progress[0]) + "/" + str(progress[1]))
+            percentage = progress[0] / progress[1] * 100
+
+            if consensus.sync_status["process"]:
+                print(f"Process: {consensus.sync_status['process']}")
+            print(f"Progress: {progress[0]} / {progress[1]} ({round(percentage)}%)")
             if consensus.sync_status["download_node"]:
-                print("Downloading from node: " +
-                      consensus.sync_status["download_node"])
+                print(f"Downloading from node: {consensus.sync_status['download_node']}")
         else:
             print("Up to date\n")
 

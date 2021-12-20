@@ -19,7 +19,8 @@ class Consensus:
         self.sync_status = {
             "syncing": False,
             "progress": [0, 0],
-            "download_node": None
+            "download_node": None,
+            "process": None
         }
 
     @staticmethod
@@ -60,6 +61,7 @@ class Consensus:
             self.sync_status["syncing"] = True
             self.sync_status["download_node"] = node
             self.sync_status["progress"][1] = node_block_height
+            self.sync_status["process"] = "downloading blocks"
 
         invalid_chain = False
 
@@ -110,6 +112,7 @@ class Consensus:
         self.sync_status["syncing"] = False
         self.sync_status["download_node"] = None
         self.sync_status["progress"] = [0, 0]
+        self.sync_status["process"] = None
 
         return blockchain
 
@@ -142,6 +145,7 @@ class Consensus:
 
         if new_blockchain.height > self.blockchain.height:
             self.blockchain.clear(autosave=False)
+            self.sync_status["process"] = "adding blocks to blockchain"
             for block in new_blockchain.chain:
                 if not self.blockchain.add(block, verbose=True):
                     self.blockchain.clear(
@@ -179,6 +183,8 @@ class Consensus:
                     if node_block_height - self.blockchain.height == 1:
                         if self.download_latest_block(node):
                             continue
+
+                    self.sync_status["process"] = "downloading block inventory"
 
                     # get a list of the  node's block hashes
                     blockinv = self.get_json(node, "/blockinv")
