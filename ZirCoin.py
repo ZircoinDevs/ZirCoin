@@ -217,7 +217,9 @@ def menu():
                 print(f"{amount} {(10-len(str(amount)))*' '}| {sender} --> You")
 
     def display_blockchain():
-        print(str(blockchain))
+        blocks = blockchain.chain[-11:-1]
+        for block in blocks:
+            print(blockchain.display_block(block))
 
     def display_connection_pool():
         active_peers = list(connection_pool.pool)
@@ -291,7 +293,7 @@ ZirCoin Graphs
         'h': {"handler": transaction_history, "name": "Transaction history"},
         's': {"handler": display_sync_status, "name": "Sync status"},
 
-        '1': {"handler": display_blockchain, "name": "Display blockchain"},
+        '1': {"handler": display_blockchain, "name": "Latest blocks"},
         '2': {"handler": display_connection_pool, "name": "Connection pool"},
         '3': {"handler": display_peer_info, "name": "Peer info"},
         '4': {"handler": hashrate, "name": "Test hashrate"},
