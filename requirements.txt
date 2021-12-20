@@ -3,4 +3,4 @@ requests
 aiohttp
 pynacl
 colorama
-itertools
+more_itertools

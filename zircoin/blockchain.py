@@ -70,7 +70,7 @@ class Blockchain():
 
             return True
         else:
-            open("blockchain.json","a").close()
+            open("blockchain.json", "a").close()
             return True
 
     def make_genesis_block(self):
