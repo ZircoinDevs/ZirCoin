@@ -416,6 +416,6 @@ class Blockchain():
 
         return block
 
-    def clear(self, create_genesis_block=False):
+    def clear(self, create_genesis_block=False, autosave=True):
         self.__init__(self.blockchain_id,
-                      create_genesis_block=create_genesis_block)
+                      create_genesis_block=create_genesis_block, autosave=autosave)

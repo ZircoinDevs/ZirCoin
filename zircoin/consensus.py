@@ -1,6 +1,6 @@
 import json
-
 import requests
+from threading import Thread
 
 from .blockchain import Blockchain
 from .logger import Logger
@@ -13,6 +13,8 @@ class Consensus:
         self.connection_pool = connection_pool
         self.protocol = protocol
         self.logger = Logger("consensus")
+
+        self.block_batch_size = 60
 
         self.sync_status = {
             "syncing": False,
@@ -41,7 +43,15 @@ class Consensus:
 
         return block
 
-    def download_missing_blocks(self, node, blockinv):
+    def download_block_threaded(self, node, blockhash, return_list, block_number):
+        block = self.get_block(node, blockhash)
+        if not block:
+            return False
+
+        return_list[block_number] = block
+        return True
+
+    def sync_blockchain(self, blockchain, blockinv, node):
         # set to sync mode
         node_block_height = len(blockinv) - 1
 
@@ -53,65 +63,85 @@ class Consensus:
 
         invalid_chain = False
 
-        # download and add blocks
-        for blockhash in blockinv:
+        # split blockinv into batches
+        blockinv_batches = self.in_batches(blockinv, self.block_batch_size)
 
-            # if the blockchain already contains the hash, move on
-            if self.blockchain.contains_hash(blockhash):
+        for i, batch in enumerate(blockinv_batches):
+
+            blockhashes = []
+            for blockhash in batch:
+                if not self.blockchain.contains_hash(blockhash):
+                    blockhashes.append(blockhash)
+
+            if len(blockhashes) == 0:
                 continue
 
-            block = self.get_json(node, "/block/" + str(blockhash))
+            blocks = [None] * len(blockhashes)
+            threads = []
 
-            # if the block can't be retrieved, set it as invalid and break
-            if not block:
-                self.logger.error(
-                    "Could not get block from  node: " + str(blockhash))
-                invalid_chain = True
-                break
+            for j, blockhash in enumerate(blockhashes):
+                thread = Thread(target=self.download_block_threaded,
+                                args=(node, blockhash, blocks, j))
+                thread.start()
+                threads.append(thread)
 
-            # if the block is invalid, set the chain as invalid and break
-            if not self.blockchain.add(block):
-                break
+            for thread in threads:
+                thread.join()
+
+            for block in blocks:
+                # if the block can't be retrieved, set it as invalid and break
+                if not block:
+                    self.logger.error(
+                        "Could not get block from  node: " + str(blockhash))
+                    return False
+
+                # if the block is invalid, set the chain as invalid and break
+                if not blockchain.add(block, verbose=True):
+                    break
+
+                if is_sync:
+                    self.sync_status["progress"][0] = block["height"]
 
             if is_sync:
-                self.sync_status["progress"][0] = block["height"]
+                self.sync_status["syncing"] = True
+                self.sync_status["download_node"] = node
+                self.sync_status["progress"][1] = node_block_height
 
-        if is_sync:
-            self.sync_status["syncing"] = True
-            self.sync_status["download_node"] = node
-            self.sync_status["progress"][1] = node_block_height
+        self.sync_status["syncing"] = False
+        self.sync_status["download_node"] = None
+        self.sync_status["progress"] = [0, 0]
+
+        return blockchain
+
+    def in_batches(self, items, size):
+        batches = []
+        current_batch = []
+        for i, item in enumerate(items):
+            current_batch.append(item)
+            if (i+1) % size == 0 or i+1 == len(items):
+                batches.append(current_batch)
+                current_batch = []
+
+        return batches
+
+    def download_missing_blocks(self, node, blockinv):
+        result = self.sync_blockchain(self.blockchain, blockinv, node)
 
         # if the blockchain has been marked as invalid, move on
-        if invalid_chain:
+        if not result:
             self.blockchain.clear(create_genesis_block=True)
             return False
 
         return True
 
     def download_new_blockchain(self, node, blockinv):
-        self.sync_status["syncing"] = True
-        self.sync_status["download_node"] = node
-        self.sync_status["progress"][1] = len(blockinv)
-
         new_blockchain = Blockchain(
             self.blockchain.blockchain_id, create_genesis_block=False, autosave=False)
 
-        for blockhash in blockinv:
-            block = self.get_block(node, blockhash)
-            if not block:
-                self.logger.error(
-                    "Could not get block from  node: " + str(blockhash))
-                break
-
-            self.sync_status["progress"][0] = block["height"]
-
-            # add the block
-            if not new_blockchain.add(block, verbose=True):
-                self.logger.info(f"Invalid block: {blockhash}")
-                break
+        self.sync_blockchain(new_blockchain, blockinv, node)
 
         if new_blockchain.height > self.blockchain.height:
-            self.blockchain.clear()
+            self.blockchain.clear(autosave=False)
             for block in new_blockchain.chain:
                 if not self.blockchain.add(block, verbose=True):
                     self.blockchain.clear(
@@ -119,6 +149,11 @@ class Consensus:
                     self.logger.info(
                         "Cleared blockchain due to fraudulent blocks.")
                     return False
+
+                if block["height"] % 1000 == 1:
+                    self.blockchain.save()
+
+        self.blockchain.autosave = True
         return True
 
     def download_latest_block(self, node):
@@ -159,10 +194,6 @@ class Consensus:
                     else:
                         # if the node's blockchain is new, sync to a new blockchain
                         self.download_new_blockchain(node, blockinv)
-
-                    self.sync_status["syncing"] = False
-                    self.sync_status["download_node"] = None
-                    self.sync_status["progress"] = [0, 0]
 
     def transaction_consensus(self):
         while True:
