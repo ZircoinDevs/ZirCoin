@@ -55,6 +55,8 @@ class Consensus:
         return True
 
     def sync_blockchain(self, blockchain, blockinv, node):
+        blockchain.autosave = False
+
         # set to sync mode
         node_block_height = len(blockinv) - 1
 
@@ -100,15 +102,17 @@ class Consensus:
             self.sync_status["speed"] = round(((end_time - start_time) / self.block_batch_size) * 100, 2)
 
             for block in blocks:
-                self.sync_status["progress"][0] = block["height"] + 1 if is_sync else None
-
                 if not block:
                     self.logger.error(
                         "Could not get block from  node: " + str(blockhash))
-                    return False
+                    return blockchain
+                
+                self.sync_status["progress"][0] = block["height"] + 1 if is_sync else None
 
                 if not blockchain.add(block, verbose=True):
-                    return False
+                    return blockchain
+            
+            blockchain.save()
 
             if is_sync:
                 self.sync_status["syncing"] = True
@@ -121,6 +125,7 @@ class Consensus:
         self.sync_status["process"] = None
         self.sync_status["speed"] = 0
 
+        blockchain.autosave = True
         return blockchain
 
     def in_batches(self, items, size):
@@ -135,12 +140,7 @@ class Consensus:
         return batches
 
     def download_missing_blocks(self, node, blockinv):
-        result = self.sync_blockchain(self.blockchain, blockinv, node)
-
-        # if the blockchain has been marked as invalid, move on
-        if not result:
-            self.blockchain.clear(create_genesis_block=True)
-            return False
+        self.blockchain = self.sync_blockchain(self.blockchain, blockinv, node)
 
         return True
 
