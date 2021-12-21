@@ -1,6 +1,7 @@
 import json
 import requests
 from threading import Thread
+from time import time
 
 from .blockchain import Blockchain
 from .logger import Logger
@@ -14,19 +15,20 @@ class Consensus:
         self.protocol = protocol
         self.logger = Logger("consensus")
 
-        self.block_batch_size = 60
+        self.block_batch_size = 50
 
         self.sync_status = {
             "syncing": False,
             "progress": [0, 0],
             "download_node": None,
-            "process": None
+            "process": None,
+            "speed": 0
         }
 
     @staticmethod
     def get_json(node, url):
         try:
-            response = requests.get(node + url)
+            response = requests.get(node + url, timeout=1)
             return response.json()
         except (requests.exceptions.ConnectionError,
                 requests.exceptions.Timeout,
@@ -61,12 +63,14 @@ class Consensus:
             self.sync_status["syncing"] = True
             self.sync_status["download_node"] = node
             self.sync_status["progress"][1] = node_block_height
-            self.sync_status["process"] = "downloading blocks"
+            self.sync_status["process"] = "batching block inventory"
 
         invalid_chain = False
 
         # split blockinv into batches
         blockinv_batches = self.in_batches(blockinv, self.block_batch_size)
+
+        self.sync_status["process"] = "downloading blocks"
 
         for i, batch in enumerate(blockinv_batches):
 
@@ -81,6 +85,8 @@ class Consensus:
             blocks = [None] * len(blockhashes)
             threads = []
 
+            start_time = time()
+
             for j, blockhash in enumerate(blockhashes):
                 thread = Thread(target=self.download_block_threaded,
                                 args=(node, blockhash, blocks, j))
@@ -90,19 +96,19 @@ class Consensus:
             for thread in threads:
                 thread.join()
 
+            end_time = time()
+            self.sync_status["speed"] = round(((end_time - start_time) / self.block_batch_size) * 100, 2)
+
             for block in blocks:
-                # if the block can't be retrieved, set it as invalid and break
+                self.sync_status["progress"][0] = block["height"] + 1 if is_sync else None
+
                 if not block:
                     self.logger.error(
                         "Could not get block from  node: " + str(blockhash))
                     return False
 
-                # if the block is invalid, set the chain as invalid and break
                 if not blockchain.add(block, verbose=True):
-                    break
-
-                if is_sync:
-                    self.sync_status["progress"][0] = block["height"]
+                    return False
 
             if is_sync:
                 self.sync_status["syncing"] = True
@@ -113,6 +119,7 @@ class Consensus:
         self.sync_status["download_node"] = None
         self.sync_status["progress"] = [0, 0]
         self.sync_status["process"] = None
+        self.sync_status["speed"] = 0
 
         return blockchain
 
@@ -141,11 +148,15 @@ class Consensus:
         new_blockchain = Blockchain(
             self.blockchain.blockchain_id, create_genesis_block=False, autosave=False)
 
-        self.sync_blockchain(new_blockchain, blockinv, node)
+        new_blockchain = self.sync_blockchain(new_blockchain, blockinv, node)
+
+        if not new_blockchain:
+            return False
 
         if new_blockchain.height > self.blockchain.height:
             self.blockchain.clear(autosave=False)
             self.sync_status["process"] = "adding blocks to blockchain"
+
             for block in new_blockchain.chain:
                 if not self.blockchain.add(block, verbose=True):
                     self.blockchain.clear(

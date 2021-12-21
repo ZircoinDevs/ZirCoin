@@ -250,6 +250,8 @@ def menu():
             print(f"Progress: {progress[0]} / {progress[1]} ({round(percentage)}%)")
             if consensus.sync_status["download_node"]:
                 print(f"Downloading from node: {consensus.sync_status['download_node']}")
+
+            print(f"Download speed: {consensus.sync_status['speed']}s per 100 blocks")
         else:
             print("Up to date\n")
 
