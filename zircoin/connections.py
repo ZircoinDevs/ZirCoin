@@ -100,8 +100,8 @@ class ConnectionPool:
             return False
 
         try:
-            home = requests.get(addr, timeout=0.5).text
-            info = requests.get(addr + "/info", timeout=0.5).json()
+            home = requests.get(addr, timeout=1).text
+            info = requests.get(addr + "/info", timeout=1).json()
 
             if self.config["fullnode"]:
                 requests.post(addr + "/ping",
