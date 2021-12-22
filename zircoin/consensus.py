@@ -69,10 +69,13 @@ class Consensus:
 
         invalid_chain = False
 
+        if blockchain.last_block:
+            last_block_index = blockinv.index(blockchain.last_block["hash"])
+
+            blockinv = blockinv[last_block_index+1:-1]
+
         # split blockinv into batches
         blockinv_batches = self.in_batches(blockinv, self.block_batch_size)
-
-        self.sync_status["process"] = "downloading blocks"
 
         for i, batch in enumerate(blockinv_batches):
 
@@ -88,6 +91,8 @@ class Consensus:
             threads = []
 
             start_time = time()
+
+            self.sync_status["process"] = "downloading blocks"
 
             for j, blockhash in enumerate(blockhashes):
                 thread = Thread(target=self.download_block_threaded,
@@ -106,12 +111,12 @@ class Consensus:
                     self.logger.error(
                         "Could not get block from  node: " + str(blockhash))
                     return blockchain
-                
+
                 self.sync_status["progress"][0] = block["height"] + 1 if is_sync else None
 
                 if not blockchain.add(block, verbose=True):
                     return blockchain
-            
+
             blockchain.save()
 
             if is_sync:
