@@ -28,7 +28,7 @@ class Consensus:
     @staticmethod
     def get_json(node, url):
         try:
-            response = requests.get(node + url, timeout=1)
+            response = requests.get(node + url, timeout=2)
             return response.json()
         except (requests.exceptions.ConnectionError,
                 requests.exceptions.Timeout,
@@ -115,7 +115,7 @@ class Consensus:
                 if not blockchain.add(block, verbose=True):
                     return blockchain
 
-            blockchain.save()
+            #blockchain.save()
 
             if is_sync:
                 self.sync_status["syncing"] = True
