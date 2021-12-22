@@ -79,6 +79,11 @@ IMPORTANT NOTE: ZirCoin is currently in testnet, so there are many things still 
 
 Here is how to get started with ZirCoin.
 
+### Exe Version
+If you would like to run ZirCoin as an exe, You can download it here: http://adfoc.us/72736782158172
+
+All profits from the monitized link go towards node server costs!
+
 ### Prerequisites
 * python3
 
