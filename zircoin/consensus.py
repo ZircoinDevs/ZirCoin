@@ -115,7 +115,8 @@ class Consensus:
                 if not blockchain.add(block, verbose=True):
                     return blockchain
 
-            #blockchain.save()
+            if i % 10 == 1:
+                blockchain.save()
 
             if is_sync:
                 self.sync_status["syncing"] = True
