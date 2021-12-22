@@ -108,8 +108,6 @@ class Consensus:
 
             for block in blocks:
                 if not block:
-                    self.logger.error(
-                        "Could not get block from  node: " + str(blockhash))
                     return blockchain
 
                 self.sync_status["progress"][0] = block["height"] + 1 if is_sync else None
