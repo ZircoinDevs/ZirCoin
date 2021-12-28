@@ -4,3 +4,4 @@ aiohttp
 pynacl
 colorama
 more_itertools
+simplejson
