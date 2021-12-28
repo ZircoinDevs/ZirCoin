@@ -48,7 +48,7 @@ class TransactionPool:
             "sender": public_key,
             "receiver": receiver,
             "amount": amount,
-            "timestamp": int(time()),
+            "timestamp": time(),
         }
 
         transaction_bytes = json.dumps(transaction, sort_keys=True).encode("ascii")
@@ -68,7 +68,7 @@ class TransactionPool:
             "sender": "coinbase",
             "receiver": receiver,
             "amount": amount,
-            "timestamp": int(time()),
+            "timestamp": time(),
         }
 
         transaction_bytes = json.dumps(transaction, sort_keys=True).encode("ascii")

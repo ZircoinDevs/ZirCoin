@@ -1,9 +1,8 @@
 {
     "seed_nodes": [
-        "puffindev.xyz:2227",
-        "disconode.puffindev.xyz:8820"
+        "puffindev.xyz:2227"
     ],
     "multiport_mode": true,
-    "blockchain_id": "testnet:1",
+    "blockchain_id": "testnet-0.2",
     "fullnode": false
 }

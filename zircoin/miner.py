@@ -4,9 +4,9 @@ logger = Logger("miner")
 
 
 class Miner:
-    def __init__(self, blockchain, protocol, wallet, config, consensus):
+    def __init__(self, blockchain, http_routes, wallet, config, consensus):
         self.blockchain = blockchain
-        self.protocol = protocol
+        self.http_routes = http_routes
         self.wallet = wallet
         self.config = config
         self.consensus = consensus
@@ -28,7 +28,7 @@ class Miner:
                 if self.config["fullnode"]:
                     self.blockchain.add(block)
                 else:
-                    self.protocol.broadcast_block(block)
+                    self.http_routes.broadcast_block(block)
 
                 mined_block = True
                 height = block["height"]

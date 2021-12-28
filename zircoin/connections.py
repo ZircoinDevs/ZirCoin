@@ -3,7 +3,7 @@ import json
 from more_itertools import take
 
 from .logger import Logger
-from .version import PROTOCOL_VERSION
+from .version import PROTOCOL_VERSION, NETWORKING_VERSION
 
 logger = Logger("connections")
 
@@ -17,6 +17,9 @@ class ConnectionPool:
         self.config = config
         self.node_id = node_id
         self.server_port = server_port
+
+        self.NETWORKING_VERSION = NETWORKING_VERSION
+        self.PROTOCOL_VERSION = PROTOCOL_VERSION
 
         self.connection_errors = (
             requests.exceptions.ConnectionError,
@@ -121,7 +124,12 @@ class ConnectionPool:
         if info["node_id"] in self.node_ids:
             return False
 
-        if info["protocol"].split('.', 2)[0] != PROTOCOL_VERSION.split('.')[0]:
+        if (info["networking_version"].split('.', 2)[0] != self.NETWORKING_VERSION.split('.', 2)[0] or
+            info["networking_version"].split('.', 2)[1] != self.NETWORKING_VERSION.split('.', 2)[1]):
+            return False
+
+        if (info["protocol_version"].split('.', 2)[0] != self.PROTOCOL_VERSION.split('.', 2)[0] or
+            info["protocol_version"].split('.', 2)[1] != self.PROTOCOL_VERSION.split('.', 2)[1]):
             return False
 
         if info["blockchain_id"] != self.config["blockchain_id"]:
@@ -136,9 +144,8 @@ class ConnectionPool:
             return False
 
     def update_pool(self):
-        """
-        Moves any active peers in the inactive connections pool to the main pool
-        """
+        # moves any active nodes in the inactive connections pool to the main pool
+        # and discovers new nodes
 
         if len(self.pool) < self.max_connections:
             for peer in self.pool.copy():

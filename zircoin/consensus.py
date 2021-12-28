@@ -1,4 +1,4 @@
-import json
+import json, simplejson
 import requests
 from threading import Thread
 from time import time
@@ -9,10 +9,10 @@ from .logger import Logger
 
 class Consensus:
 
-    def __init__(self, blockchain, connection_pool, protocol):
+    def __init__(self, blockchain, connection_pool, http_routes):
         self.blockchain = blockchain
         self.connection_pool = connection_pool
-        self.protocol = protocol
+        self.http_routes = http_routes
         self.logger = Logger("consensus")
 
         self.block_batch_size = 50
@@ -35,7 +35,8 @@ class Consensus:
                 requests.exceptions.ConnectTimeout,
                 requests.exceptions.ReadTimeout,
                 requests.exceptions.HTTPError,
-                json.decoder.JSONDecodeError):
+                json.decoder.JSONDecodeError,
+                simplejson.errors.JSONDecodeError):
             return None
 
     def get_block(self, node, blockhash):
@@ -150,11 +151,11 @@ class Consensus:
 
     def download_new_blockchain(self, node, blockinv):
         new_blockchain = Blockchain(
-            self.blockchain.blockchain_id, create_genesis_block=False, autosave=False)
+            self.blockchain.BLOCKCHAIN_ID, create_genesis_block=False, autosave=False)
 
         new_blockchain = self.sync_blockchain(new_blockchain, blockinv, node)
 
-        if not new_blockchain:
+        if not new_blockchain or not new_blockchain.height:
             return False
 
         if new_blockchain.height > self.blockchain.height:

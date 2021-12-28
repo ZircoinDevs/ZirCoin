@@ -3,11 +3,19 @@ from zircoin.miner import Miner
 from zircoin.logger import Logger
 from zircoin.server import Server
 from zircoin.consensus import Consensus
-from zircoin.protocol import Protocol
+from zircoin.networking import HttpRoutes
 from zircoin.connections import ConnectionPool
 from zircoin.blockchain import Blockchain
+from zircoin.version import PROTOCOL_VERSION, NETWORKING_VERSION, SOFTWARE_VERSION
 from zircoin.utils import test_hashrate
-from zircoin.plotting import wealth_distrobution, transaction_volume, transaction_quantity, coin_supply, difficulty, block_time
+from zircoin.plotting import (
+    wealth_distrobution,
+    transaction_volume,
+    transaction_quantity,
+    coin_supply,
+    difficulty,
+    block_time
+)
 
 import heapq
 import string
@@ -28,6 +36,7 @@ parser.add_argument("--port", "-p", type=int, help="Port for server to run on")
 parser.add_argument("--fullnode", "-f", default=False, action="store_true",
                     help="Eneble fullnode mode (must be port forwarded)")
 parser.add_argument("--wallet", "-w", type=str, help="Path to wallet file")
+parser.add_argument("--blockchain", "-b", type=str, help="Path to blockchain json file")
 args = parser.parse_args()
 
 # constants
@@ -56,7 +65,11 @@ server_config = {
 }
 
 # init blockchain
-blockchain = Blockchain(config["blockchain_id"])
+
+if args.blockchain:
+    blockchain = Blockchain(config["blockchain_id"], file=args.blockchain)
+else:
+    blockchain = Blockchain(config["blockchain_id"])
 blockchain.load()
 
 # init modules
@@ -68,12 +81,12 @@ else:
 
 connection_pool = ConnectionPool(
     config, NODE_ID, server_config["port"])
-protocol = Protocol(blockchain, connection_pool,
+http_routes = HttpRoutes(blockchain, connection_pool,
                     server_config, config, NODE_ID)
-server = Server(blockchain, protocol, server_config)
+server = Server(blockchain, http_routes, server_config)
 
-consensus = Consensus(blockchain, connection_pool, protocol)
-miner = Miner(blockchain, protocol, wallet, config, consensus)
+consensus = Consensus(blockchain, connection_pool, http_routes)
+miner = Miner(blockchain, http_routes, wallet, config, consensus)
 
 logger = Logger("zircoin")
 
@@ -191,7 +204,7 @@ def menu():
         if blockchain.transaction_pool.add(transaction):
             logger.info("Transaction added.")
             if config["fullnode"] == False:
-                protocol.broadcast_transaction(transaction)
+                http_routes.broadcast_transaction(transaction)
         else:
             logger.info("Transaction invalid.")
 
@@ -235,8 +248,11 @@ def menu():
         print("none") if len(inactive_peers) == 0 else None
 
     def display_peer_info():
-        print("Protocol version: " + protocol.version)
-        print("Node ID: " + protocol.node_id)
+        print("Blockchain protocol version: " + PROTOCOL_VERSION)
+        print("HttpRoutes Version: " + NETWORKING_VERSION)
+        print("Software Version: " + SOFTWARE_VERSION)
+
+        print("\nNode ID: " + http_routes.NODE_ID)
         print("Block height: " + str(blockchain.height))
 
     def display_sync_status():
