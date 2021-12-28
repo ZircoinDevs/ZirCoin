@@ -22,7 +22,7 @@ class Blockchain():
     def __init__(self, blockchain_id, create_genesis_block=True, autosave=True, file="blockchain.json"):
         self.chain = []
         self.transaction_pool = TransactionPool(self)
-        self.target = "000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        self.target = "00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
         self.autosave = autosave
         self.blockchain_file = file
 
