@@ -159,7 +159,7 @@ def menu():
 
         # time until halving
 
-        next_halving = blockchain.height + (4000 - blockchain.height % 4000)
+        next_halving = blockchain.height + (100000 - blockchain.height % 100000)
         blocks_until_halving = next_halving - blockchain.height
         estimated_time_seconds = block_time * blocks_until_halving
         estimated_time_days = estimated_time_seconds/60/60/24
