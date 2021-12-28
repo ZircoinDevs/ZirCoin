@@ -3,11 +3,19 @@ from zircoin.miner import Miner
 from zircoin.logger import Logger
 from zircoin.server import Server
 from zircoin.consensus import Consensus
-from zircoin.protocol import Protocol
+from zircoin.networking import HttpRoutes
 from zircoin.connections import ConnectionPool
 from zircoin.blockchain import Blockchain
+from zircoin.version import PROTOCOL_VERSION, NETWORKING_VERSION, SOFTWARE_VERSION
 from zircoin.utils import test_hashrate
-from zircoin.plotting import wealth_distrobution, transaction_volume, transaction_quantity, coin_supply, difficulty, block_time
+from zircoin.plotting import (
+    wealth_distrobution,
+    transaction_volume,
+    transaction_quantity,
+    coin_supply,
+    difficulty,
+    block_time
+)
 
 import heapq
 import string
@@ -28,6 +36,7 @@ parser.add_argument("--port", "-p", type=int, help="Port for server to run on")
 parser.add_argument("--fullnode", "-f", default=False, action="store_true",
                     help="Eneble fullnode mode (must be port forwarded)")
 parser.add_argument("--wallet", "-w", type=str, help="Path to wallet file")
+parser.add_argument("--blockchain", "-b", type=str, help="Path to blockchain json file")
 args = parser.parse_args()
 
 # constants
@@ -56,7 +65,11 @@ server_config = {
 }
 
 # init blockchain
-blockchain = Blockchain(config["blockchain_id"])
+
+if args.blockchain:
+    blockchain = Blockchain(config["blockchain_id"], file=args.blockchain)
+else:
+    blockchain = Blockchain(config["blockchain_id"])
 blockchain.load()
 
 # init modules
@@ -68,12 +81,12 @@ else:
 
 connection_pool = ConnectionPool(
     config, NODE_ID, server_config["port"])
-protocol = Protocol(blockchain, connection_pool,
+http_routes = HttpRoutes(blockchain, connection_pool,
                     server_config, config, NODE_ID)
-server = Server(blockchain, protocol, server_config)
+server = Server(blockchain, http_routes, server_config)
 
-consensus = Consensus(blockchain, connection_pool, protocol)
-miner = Miner(blockchain, protocol, wallet, config, consensus)
+consensus = Consensus(blockchain, connection_pool, http_routes)
+miner = Miner(blockchain, http_routes, wallet, config, consensus)
 
 logger = Logger("zircoin")
 
@@ -146,7 +159,7 @@ def menu():
 
         # time until halving
 
-        next_halving = blockchain.height + (4000 - blockchain.height % 4000)
+        next_halving = blockchain.height + (100000 - blockchain.height % 100000)
         blocks_until_halving = next_halving - blockchain.height
         estimated_time_seconds = block_time * blocks_until_halving
         estimated_time_days = estimated_time_seconds/60/60/24
@@ -191,7 +204,7 @@ def menu():
         if blockchain.transaction_pool.add(transaction):
             logger.info("Transaction added.")
             if config["fullnode"] == False:
-                protocol.broadcast_transaction(transaction)
+                http_routes.broadcast_transaction(transaction)
         else:
             logger.info("Transaction invalid.")
 
@@ -217,7 +230,9 @@ def menu():
                 print(f"{amount} {(10-len(str(amount)))*' '}| {sender} --> You")
 
     def display_blockchain():
-        print(str(blockchain))
+        blocks = blockchain.chain[-11:-1]
+        for block in blocks:
+            print(blockchain.display_block(block))
 
     def display_connection_pool():
         active_peers = list(connection_pool.pool)
@@ -233,18 +248,26 @@ def menu():
         print("none") if len(inactive_peers) == 0 else None
 
     def display_peer_info():
-        print("Protocol version: " + protocol.version)
-        print("Node ID: " + protocol.node_id)
+        print("Blockchain protocol version: " + PROTOCOL_VERSION)
+        print("HttpRoutes Version: " + NETWORKING_VERSION)
+        print("Software Version: " + SOFTWARE_VERSION)
+
+        print("\nNode ID: " + http_routes.NODE_ID)
         print("Block height: " + str(blockchain.height))
 
     def display_sync_status():
         if consensus.sync_status["syncing"]:
             print("Syncing...\n")
             progress = consensus.sync_status["progress"]
-            print("Progress: " + str(progress[0]) + "/" + str(progress[1]))
+            percentage = progress[0] / progress[1] * 100
+
+            if consensus.sync_status["process"]:
+                print(f"Process: {consensus.sync_status['process']}")
+            print(f"Progress: {progress[0]} / {progress[1]} ({round(percentage)}%)")
             if consensus.sync_status["download_node"]:
-                print("Downloading from node: " +
-                      consensus.sync_status["download_node"])
+                print(f"Downloading from node: {consensus.sync_status['download_node']}")
+
+            print(f"Download speed: {consensus.sync_status['speed']}s per 100 blocks")
         else:
             print("Up to date\n")
 
@@ -288,7 +311,7 @@ ZirCoin Graphs
         'h': {"handler": transaction_history, "name": "Transaction history"},
         's': {"handler": display_sync_status, "name": "Sync status"},
 
-        '1': {"handler": display_blockchain, "name": "Display blockchain"},
+        '1': {"handler": display_blockchain, "name": "Latest blocks"},
         '2': {"handler": display_connection_pool, "name": "Connection pool"},
         '3': {"handler": display_peer_info, "name": "Peer info"},
         '4': {"handler": hashrate, "name": "Test hashrate"},

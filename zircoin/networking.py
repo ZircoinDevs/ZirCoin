@@ -1,15 +1,18 @@
-import json
-
 from aiohttp import web
 import requests
+import json
 
-from .version import PROTOCOL_VERSION
 from .logger import Logger
+from .version import (
+    PROTOCOL_VERSION,
+    NETWORKING_VERSION,
+    SUPPORTED_PROTOCOL_VERSIONS
+)
 
 logger = Logger("networking")
 
 
-class Protocol:
+class HttpRoutes:
     def __init__(self, blockchain, connection_pool, server_config, config, node_id):
         self.server_config = server_config
         self.main_config = config
@@ -24,33 +27,10 @@ class Protocol:
             requests.exceptions.HTTPError
         )
 
-        self.version = PROTOCOL_VERSION
+        self.PROTOCOL_VERSION = PROTOCOL_VERSION
+        self.NETWORKING_VERSION = NETWORKING_VERSION
 
-        self.node_id = node_id
-
-    # Methods
-
-    def broadcast_block(self, block):
-        if self.blockchain.last_block:
-            peers = self.connection_pool.get_peers_with_blockhash(
-                self.blockchain.chain[-1]["hash"], 20)
-        else:
-            peers = self.connection_pool.get_alive_peers(20)
-
-        for peer in peers:
-            try:
-                requests.post(peer + "/block-recv", json.dumps(block))
-            except self.connection_errors:
-                continue
-
-    def broadcast_transaction(self, transaction):
-        peers = self.connection_pool.get_alive_peers(20)
-
-        for peer in peers:
-            try:
-                requests.post(peer + "/tx-recv", json.dumps(transaction))
-            except self.connection_errors:
-                continue
+        self.NODE_ID = node_id
 
     # AIOHTTP Routes
 
@@ -71,9 +51,10 @@ class Protocol:
     # returns peer info
     def info_route(self, request):
         return web.json_response({
-            "protocol": self.version,
+            "protocol_version": self.PROTOCOL_VERSION,
+            "networking_version": self.NETWORKING_VERSION,
             "block_height": self.blockchain.height,
-            "node_id": self.node_id,
+            "node_id": self.NODE_ID,
             "blockchain_id": self.main_config["blockchain_id"]
         })
 
@@ -128,3 +109,28 @@ class Protocol:
         block = self.blockchain.get_block_from_hash(block_hash)
         if block:
             return web.json_response(block)
+
+
+    # messages
+
+    def broadcast_block(self, block):
+        if self.blockchain.last_block:
+            peers = self.connection_pool.get_peers_with_blockhash(
+                self.blockchain.chain[-1]["hash"], 20)
+        else:
+            peers = self.connection_pool.get_alive_peers(20)
+
+        for peer in peers:
+            try:
+                requests.post(peer + "/block-recv", json.dumps(block))
+            except self.connection_errors:
+                continue
+
+    def broadcast_transaction(self, transaction):
+        peers = self.connection_pool.get_alive_peers(20)
+
+        for peer in peers:
+            try:
+                requests.post(peer + "/tx-recv", json.dumps(transaction))
+            except self.connection_errors:
+                continue

@@ -9,17 +9,27 @@ from os.path import exists
 from .logger import Logger
 from .transactions import TransactionPool
 
+from .version import (
+    PROTOCOL_VERSION,
+    SUPPORTED_PROTOCOL_VERSIONS
+)
+
 miner = Logger("miner")
 bc = Logger("blockchain")
 
 
 class Blockchain():
-    def __init__(self, blockchain_id, create_genesis_block=True, autosave=True):
+    def __init__(self, blockchain_id, create_genesis_block=True, autosave=True, file="blockchain.json"):
         self.chain = []
         self.transaction_pool = TransactionPool(self)
         self.target = "00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-        self.blockchain_id = blockchain_id
         self.autosave = autosave
+        self.blockchain_file = file
+
+        self.BLOCKCHAIN_ID = blockchain_id
+        self.PROTOCOL_VERSION = PROTOCOL_VERSION
+        self.SUPPORTED_PROTOCOL_VERSIONS = SUPPORTED_PROTOCOL_VERSIONS
+
         if create_genesis_block:
             self.chain.append(self.make_genesis_block())
 
@@ -43,18 +53,18 @@ class Blockchain():
     def block_reward(self):
         reward = 5
         for i in range(1, self.height):
-            if i % 4000 == 0:
+            if i % 100000 == 0:
                 reward *= 0.5
 
         return reward
 
     def save(self):
-        with open("blockchain.json", "w") as f:
+        with open(self.blockchain_file, "w") as f:
             json.dump(self.chain, f)
 
     def load(self):
-        if exists("blockchain.json"):
-            with open("blockchain.json", "r") as f:
+        if exists(self.blockchain_file):
+            with open(self.blockchain_file, "r") as f:
                 try:
                     blockchain = json.load(f)
                 except json.decoder.JSONDecodeError:
@@ -62,7 +72,7 @@ class Blockchain():
 
                 if len(blockchain) > len(self.chain):
                     self.chain = blockchain
-                    bc.info("Loaded blockchain from blockchain.json")
+                    bc.info(f"Loaded blockchain from {self.blockchain_file}")
                     self.target = self.last_block["target"]
                     self.calculate_target()
                 else:
@@ -70,14 +80,15 @@ class Blockchain():
 
             return True
         else:
-            open("blockchain.json","a").close()
+            open(self.blockchain_file, "a").close()
             return True
 
     def make_genesis_block(self):
         block = {
             "height": len(self.chain),
             "time": time(),
-            "blockchain_id": self.blockchain_id,
+            "blockchain_id": self.BLOCKCHAIN_ID,
+            "protocol_version": self.PROTOCOL_VERSION,
             "transactions": [],
             "previous_hash": None,
             "target": self.target,
@@ -92,7 +103,8 @@ class Blockchain():
         block = {
             "height": self.height + 1,
             "time": time(),
-            "blockchain_id": self.blockchain_id,
+            "protocol_version": self.PROTOCOL_VERSION,
+            "blockchain_id": self.BLOCKCHAIN_ID,
             "transactions": self.transaction_pool.get_pending_transactions(self.transaction_inv),
             "previous_hash": self.previous_hash,
             "target": self.target,
@@ -174,10 +186,15 @@ class Blockchain():
         return block["hash"] < self.target
 
     def validate(self, block, verbose=False):
+
+        if block["protocol_version"] not in self.SUPPORTED_PROTOCOL_VERSIONS:
+            bc.info(f"Failed to validate block {block['height']}, please update zircoin to the latest version. https://zircoin.network")
+            return False
+
         self.calculate_target()
 
         # check that the block is from the correct blockchain
-        if block["blockchain_id"] != self.blockchain_id:
+        if block["blockchain_id"] != self.BLOCKCHAIN_ID:
             if verbose:
                 bc.error(
                     "Block #" + str(block["height"]) + " is invalid: Block is from a different blockchain")
@@ -413,10 +430,9 @@ class Blockchain():
             return None
 
         height = block["height"]
-        miner.info(f"✓ Mined block #{height} in {round(time_taken, 2)}s")
 
         return block
 
-    def clear(self, create_genesis_block=False):
-        self.__init__(self.blockchain_id,
-                      create_genesis_block=create_genesis_block)
+    def clear(self, create_genesis_block=False, autosave=True):
+        self.__init__(self.BLOCKCHAIN_ID,
+                      create_genesis_block=create_genesis_block, autosave=autosave, file=self.blockchain_file)
