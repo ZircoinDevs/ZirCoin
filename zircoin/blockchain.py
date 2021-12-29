@@ -188,7 +188,7 @@ class Blockchain():
     def validate(self, block, verbose=False):
 
         if block["protocol_version"] not in self.SUPPORTED_PROTOCOL_VERSIONS:
-            bc.info(f"Failed to validate block {block['height']}, please update zircoin to the latest version. https://zircoin.network")
+            bc.error(f"Failed to validate block {block['height']}, please update zircoin to the latest version. https://zircoin.network")
             return False
 
         self.calculate_target()
