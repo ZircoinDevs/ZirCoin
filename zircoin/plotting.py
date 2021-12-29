@@ -67,6 +67,11 @@ def transaction_volume(blockchain):
         keys.append(f"{wallet[0:3]}...{wallet[-3:]}")
 
     fig1, ax1 = plt.subplots()
+    
+    if len(set(wallets.values())) < 2:
+        logger.info("Not enough data to show")
+        return False
+
     ax1.pie(wallets.values(), labels=keys, autopct='%1.1f%%',
             shadow=True, startangle=90)
     ax1.axis('equal')
