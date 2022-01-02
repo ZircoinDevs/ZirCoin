@@ -19,7 +19,6 @@ from threading import Thread
 
 
 class Client():
-
     def __init__(self, CONFIG=json.load(open("config.json", "r")), blockchain_file="blockchain.json"):
 
         self.NODE_ID = sha256(str(getrandbits(256)).encode()).hexdigest()
@@ -62,6 +61,72 @@ class Client():
 
     def start_threads(self):
         self.connection_pool.add_seed_nodes()
+
+        self.consensus_thread = Thread(target=self.consensus.consensus, name="consensus")
+        self.consensus_thread.daemon = True
+        self.consensus_thread.start()
+        sleep(0.1)
+
+        self.transaction_consensus_thread = Thread(
+            target=self.consensus.transaction_consensus, name="txconsensus")
+        self.transaction_consensus_thread.daemon = True
+        self.transaction_consensus_thread.start()
+        sleep(0.1)
+
+class Node():
+    def __init__(self, CONFIG=json.load(open("config.json", "r")), blockchain_file="blockchain.json"):
+
+        self.NODE_ID = sha256(str(getrandbits(256)).encode()).hexdigest()
+        self.CONFIG = CONFIG
+        self.SERVER_CONFIG = {
+            "ip": "0.0.0.0",
+            "port": 2227
+        }
+
+        self.blockchain = Blockchain(self.CONFIG["blockchain_id"], file=blockchain_file)
+        self.blockchain.load()
+
+        self.connection_pool = ConnectionPool(
+            CONFIG,
+            self.NODE_ID,
+            2227
+        )
+
+        self.http_routes = HttpRoutes(
+            self.blockchain,
+            self.connection_pool,
+            self.SERVER_CONFIG,
+            self.CONFIG,
+            self.NODE_ID
+        )
+
+        self.server = Server(
+            self.blockchain,
+            self.http_routes,
+            self.SERVER_CONFIG
+        )
+
+        self.consensus = Consensus(
+            self.blockchain,
+            self.connection_pool
+        )
+
+        self.miner = Miner(
+            self.blockchain,
+            self.CONFIG,
+            self.consensus,
+            self.connection_pool
+        )
+
+        self.start()
+
+    def start(self):
+        self.connection_pool.add_seed_nodes()
+
+        self.server_thread = Thread(target=self.server.start_server, args=(
+            self.server.aiohttp_server(),), name="server")
+        self.server_thread.daemon = True
+        self.server_thread.start()
 
         self.consensus_thread = Thread(target=self.consensus.consensus, name="consensus")
         self.consensus_thread.daemon = True
