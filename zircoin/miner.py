@@ -1,34 +1,36 @@
 from .logger import Logger
+from .messages import broadcast_block
 from time import time, sleep
 logger = Logger("miner")
 
 
 class Miner:
-    def __init__(self, blockchain, http_routes, wallet, config, consensus):
+    def __init__(self, blockchain, config, consensus, connection_pool, verbose=True):
         self.blockchain = blockchain
-        self.http_routes = http_routes
-        self.wallet = wallet
         self.config = config
         self.consensus = consensus
+        self.connection_pool = connection_pool
 
-    def mine(self):
-        logger.info("⛏  Mining now...")
+        self.verbose = verbose
+
+    def mine(self, wallet):
+        if self.verbose: logger.info("⛏  Mining now...")
         while True:
             try:
                 if self.consensus.sync_status["syncing"]:
-                    logger.info("Waiting for blockchain sync to complete...")
+                    if self.verbose: logger.info("Waiting for blockchain sync to complete...")
                     while self.consensus.sync_status["syncing"]:
                         sleep(0.5)
-                    logger.info("Sync completed.")
+                    if self.verbose: logger.info("Sync completed.")
 
-                block = self.blockchain.mine_new_block(self.wallet)
+                block = self.blockchain.mine_new_block(wallet)
                 if not block:
                     continue
 
                 if self.config["fullnode"]:
                     self.blockchain.add(block)
                 else:
-                    self.http_routes.broadcast_block(block)
+                    broadcast_block(block, self.connection_pool, self.blockchain)
 
                 mined_block = True
                 height = block["height"]
@@ -38,12 +40,12 @@ class Miner:
                 timeout = time() + 5
                 while not self.blockchain.contains_hash(block["hash"]):
                     if time() >= timeout or self.blockchain.height > block["height"]:
-                        logger.info(f"✗ Block #{height} not accepted")
+                        if self.verbose: logger.info(f"✗ Block #{height} not accepted")
                         mined_block = False
                         break
 
                 if mined_block:
-                    logger.info(
+                    if self.verbose: logger.info(
                         f"✓ Mined block #{height} ({_hash})")
 
             except KeyboardInterrupt:

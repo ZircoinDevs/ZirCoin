@@ -17,6 +17,8 @@ from zircoin.plotting import (
     block_time
 )
 
+import zircoin.messages
+
 import heapq
 import string
 import argparse
@@ -38,9 +40,6 @@ parser.add_argument("--fullnode", "-f", default=False, action="store_true",
 parser.add_argument("--wallet", "-w", type=str, help="Path to wallet file")
 parser.add_argument("--blockchain", "-b", type=str, help="Path to blockchain json file")
 args = parser.parse_args()
-
-# constants
-NODE_ID = hashlib.sha256(str(random.getrandbits(256)).encode()).hexdigest()
 
 # application config
 config = json.load(open("config.json", "r"))
@@ -64,6 +63,8 @@ server_config = {
     "port": port
 }
 
+NODE_ID = hashlib.sha256(str(random.getrandbits(256)).encode()).hexdigest()
+
 # init blockchain
 
 if args.blockchain:
@@ -81,12 +82,15 @@ else:
 
 connection_pool = ConnectionPool(
     config, NODE_ID, server_config["port"])
+
 http_routes = HttpRoutes(blockchain, connection_pool,
                     server_config, config, NODE_ID)
+
 server = Server(blockchain, http_routes, server_config)
 
-consensus = Consensus(blockchain, connection_pool, http_routes)
-miner = Miner(blockchain, http_routes, wallet, config, consensus)
+consensus = Consensus(blockchain, connection_pool)
+
+miner = Miner(blockchain, config, consensus, connection_pool)
 
 logger = Logger("zircoin")
 
@@ -95,7 +99,7 @@ def menu():
     run = True
 
     def mine():
-        miner.mine()
+        miner.mine(wallet)
 
     def wallet_info():
         print(f"Wallet address: {wallet.public_key}")
@@ -204,7 +208,7 @@ def menu():
         if blockchain.transaction_pool.add(transaction):
             logger.info("Transaction added.")
             if config["fullnode"] == False:
-                http_routes.broadcast_transaction(transaction)
+                messagesbroadcast_transaction(transaction, connection_pool)
         else:
             logger.info("Transaction invalid.")
 

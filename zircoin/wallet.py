@@ -7,14 +7,14 @@ logger = Logger("Wallet")
 
 
 class Wallet:
-    def __init__(self, wallet_file="wallet.json"):
-        if not self.load_wallet(wallet_file):
+    def __init__(self, file="wallet.json"):
+        if not self.load_wallet(file):
 
-            self.create_new_wallet(wallet_file)
+            self.create_new_wallet(file)
 
             logger.info("New wallet created.")
             logger.urgent("You MUST back up your wallet in case it is lost. Copy " +
-                          wallet_file + " to a safe location.")
+                          file + " to a safe location.")
         else:
             logger.info("Loaded wallet")
 

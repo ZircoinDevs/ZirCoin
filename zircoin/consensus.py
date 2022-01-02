@@ -9,10 +9,9 @@ from .logger import Logger
 
 class Consensus:
 
-    def __init__(self, blockchain, connection_pool, http_routes):
+    def __init__(self, blockchain, connection_pool):
         self.blockchain = blockchain
         self.connection_pool = connection_pool
-        self.http_routes = http_routes
         self.logger = Logger("consensus")
 
         self.block_batch_size = 50
