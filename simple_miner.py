@@ -11,7 +11,7 @@ args = parser.parse_args()
 
 # modules
 
-wallet = Wallet(file=(args.wallet if args.wallet else "miner_wallet.json"))
+wallet = Wallet(file=(args.wallet if args.wallet else "wallet.json"))
 client = Client()
 
 client.miner.mine(wallet)
