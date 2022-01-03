@@ -8,6 +8,7 @@ from zircoin.connections import ConnectionPool
 from zircoin.blockchain import Blockchain
 from zircoin.version import PROTOCOL_VERSION, NETWORKING_VERSION, SOFTWARE_VERSION
 from zircoin.utils import test_hashrate
+from zircoin.messages import broadcast_transaction
 from zircoin.plotting import (
     wealth_distrobution,
     transaction_volume,
@@ -16,8 +17,6 @@ from zircoin.plotting import (
     difficulty,
     block_time
 )
-
-import zircoin.messages
 
 import heapq
 import string
@@ -208,7 +207,7 @@ def menu():
         if blockchain.transaction_pool.add(transaction):
             logger.info("Transaction added.")
             if config["fullnode"] == False:
-                messagesbroadcast_transaction(transaction, connection_pool)
+                broadcast_transaction(transaction, connection_pool)
         else:
             logger.info("Transaction invalid.")
 
