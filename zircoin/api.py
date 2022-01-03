@@ -6,7 +6,7 @@ from zircoin.consensus import Consensus
 from zircoin.networking import HttpRoutes
 from zircoin.connections import ConnectionPool
 from zircoin.blockchain import Blockchain
-from zircoin.version import PROTOCOL_VERSION, NETWORKING_VERSION, SOFTWARE_VERSION
+from zircoin.version import PROTOCOL_VERSION, NETWORKING_VERSION
 from zircoin.utils import test_hashrate
 
 import json
