@@ -6,7 +6,7 @@ from zircoin.consensus import Consensus
 from zircoin.networking import HttpRoutes
 from zircoin.connections import ConnectionPool
 from zircoin.blockchain import Blockchain
-from zircoin.version import PROTOCOL_VERSION, NETWORKING_VERSION, SOFTWARE_VERSION
+from zircoin.version import PROTOCOL_VERSION, NETWORKING_VERSION
 from zircoin.utils import test_hashrate
 from zircoin.messages import broadcast_transaction
 from zircoin.plotting import (
@@ -252,8 +252,7 @@ def menu():
 
     def display_peer_info():
         print("Blockchain protocol version: " + PROTOCOL_VERSION)
-        print("HttpRoutes Version: " + NETWORKING_VERSION)
-        print("Software Version: " + SOFTWARE_VERSION)
+        print("Networking Version: " + NETWORKING_VERSION)
 
         print("\nNode ID: " + http_routes.NODE_ID)
         print("Block height: " + str(blockchain.height))
