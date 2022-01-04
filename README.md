@@ -117,19 +117,25 @@ Here is how to get started with ZirCoin.
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Run a wallet/miner:
+Run a wallet/miner in the terminal:
 ```sh
-python3 ZirCoin.py
+python3 zircoin_core.py
 ```
 
 Run as a fullnode:
 ```sh
-python3 ZirCoin.py -f
+python3 zircoin_core.py -f
 ```
 + forward port 2227
 
-<img src="images/cli.png" alt="Cli" width="265" height="200">
-<img src="images/graphs.png" alt="Statistics" width="280" height="200">
+Run the tk gui (work in progress):
+```sh
+python3 zircoin_core_gui.py
+```
+
+<img src="images/cli.png" alt="Cli" width="290" height="200">
+<img src="images/graphs.png" alt="Statistics" width="295" height="200">
+<img src="images/gui.png" alt="Gui" width="295" height="200">
 
 
 <!-- ROADMAP -->
