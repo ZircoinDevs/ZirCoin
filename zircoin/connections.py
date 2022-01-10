@@ -1,6 +1,8 @@
 import requests
 import json
 from more_itertools import take
+from time import sleep, time
+from threading import Thread
 
 from .logger import Logger
 from .version import PROTOCOL_VERSION, NETWORKING_VERSION
@@ -29,6 +31,9 @@ class ConnectionPool:
             requests.exceptions.HTTPError
         )
 
+        self.node_discovery_thread = Thread(target=self.discover_nodes, daemon=True)
+        self.node_discovery_thread.start()
+
         logger.info("Initialised connection pool")
 
     @property
@@ -48,6 +53,8 @@ class ConnectionPool:
         if "seed_nodes" in self.config:
             for node in self.config["seed_nodes"]:
                 self.add(self.get_url(node))
+
+        self.update_pool()
 
     def add_tuple_addr(self, addr):
         text_addr = addr[0] + ":" + str(addr[1])
@@ -145,27 +152,13 @@ class ConnectionPool:
 
     def update_pool(self):
         # moves any active nodes in the inactive connections pool to the main pool
-        # and discovers new nodes
-
-        if len(self.pool) < self.max_connections:
-            for peer in self.pool.copy():
-                if len(self.pool) <= self.max_connections:
-                    break
-
-                try:
-                    peers = requests.get(peer + "/peers", timeout=0.5)
-                except self.connection_errors:
-                    continue
-
-                for peer in peers:
-                    self.add(peer)
 
         for peer in self.inactive_pool.copy():
             if peer in self.pool:
                 self.pool.remove(peer)
 
             try:
-                if requests.get(peer, timeout=0.4) and self.add(peer):
+                if requests.get(peer, timeout=1) and self.add(peer):
                     self.inactive_pool.remove(peer)
             except self.connection_errors:
                 continue
@@ -175,13 +168,37 @@ class ConnectionPool:
                 self.inactive_pool.remove(peer)
 
             try:
-                if requests.get(peer, timeout=0.4):
+                if requests.get(peer, timeout=1):
                     continue
             except self.connection_errors:
                 if peer in self.pool:
                     self.pool.remove(peer)
 
                 self.inactive_pool.add(peer)
+
+    def discover_nodes(self):
+        while True:
+            if len(self.pool) >= self.max_connections:
+                return False
+            
+            start = time()
+
+            for peer in self.pool.copy():
+                if len(self.pool) >= self.max_connections:
+                    break
+
+                try:
+                    peers = requests.get(peer + "/peers", timeout=2).json()
+                except self.connection_errors:
+                    continue
+
+                for peer in peers:
+                    self.add(peer)
+
+            total_time = time() - start
+            
+            sleep(max(0, (30 - total_time)))
+            
 
     def get_alive_peers(self, amount):
         self.update_pool()
