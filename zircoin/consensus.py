@@ -183,38 +183,50 @@ class Consensus:
         if not self.blockchain.add(block):
             return False
 
+    def get_longest_chain_node(self):
+        best_node = None
+        best_block_height = 0
+
+        for node in self.connection_pool.get_alive_peers(20):
+            # get the  node information
+            node_info = self.get_json(node, "/info")
+            if not node_info:
+                continue
+
+            if node_info["block_height"] > best_block_height:
+                best_node = node
+                best_block_height = node_info["block_height"]
+        
+        return best_node, (best_block_height if best_block_height > 0 else None)
+
     def consensus(self):
         while True:
-            for node in self.connection_pool.get_alive_peers(20):
-                # get the  node information
-                node_info = self.get_json(node, "/info")
-                if not node_info:
+            node, node_block_height = self.get_longest_chain_node()
+
+            if not node or not node_block_height:
+                continue
+
+            if node_block_height - self.blockchain.height == 1:
+                if self.download_latest_block(node):
                     continue
 
-                node_block_height = node_info["block_height"]
+            self.sync_status["process"] = "downloading block inventory"
 
-                if node_block_height > self.blockchain.height:
+            # get a list of the  node's block hashes
+            blockinv = self.get_json(node, "/blockinv")
+            if len(blockinv) < node_block_height:
+                continue
 
-                    if node_block_height - self.blockchain.height == 1:
-                        if self.download_latest_block(node):
-                            continue
+            # if the  node is unreachable, move on
+            if not blockinv:
+                continue
 
-                    self.sync_status["process"] = "downloading block inventory"
-
-                    # get a list of the  node's block hashes
-                    blockinv = self.get_json(node, "/blockinv")
-
-                    # if the  node is unreachable, move on
-                    if not blockinv:
-                        self.logger.error("Failed to get  node blockinv")
-                        continue
-
-                    if blockinv[0] == self.blockchain.chain[0]["hash"]:
-                        # if there are new blocks to download, sync to the existing blockchain
-                        self.download_missing_blocks(node, blockinv)
-                    else:
-                        # if the node's blockchain is new, sync to a new blockchain
-                        self.download_new_blockchain(node, blockinv)
+            if blockinv[0] == self.blockchain.chain[0]["hash"]:
+                # if there are new blocks to download, sync to the existing blockchain
+                self.download_missing_blocks(node, blockinv)
+            else:
+                # if the node's blockchain is new, sync to a new blockchain
+                self.download_new_blockchain(node, blockinv)
 
     def transaction_consensus(self):
         while True:
