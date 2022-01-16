@@ -214,11 +214,12 @@ class Consensus:
 
             # get a list of the  node's block hashes
             blockinv = self.get_json(node, "/blockinv")
-            if len(blockinv) < node_block_height:
-                continue
-
+            
             # if the  node is unreachable, move on
             if not blockinv:
+                continue
+
+            if len(blockinv) < node_block_height:
                 continue
 
             if blockinv[0] == self.blockchain.chain[0]["hash"]:
