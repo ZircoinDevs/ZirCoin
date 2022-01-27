@@ -60,19 +60,15 @@ class Consensus:
         # set to sync mode
         node_block_height = len(blockinv) - 1
 
-        is_sync = node_block_height - self.blockchain.height > 2
-        if is_sync:
-            self.sync_status["syncing"] = True
-            self.sync_status["download_node"] = node
-            self.sync_status["progress"][1] = node_block_height
-            self.sync_status["process"] = "batching block inventory"
+        self.sync_status["syncing"] = True
+        self.sync_status["download_node"] = node
+        self.sync_status["progress"][1] = node_block_height
+        self.sync_status["process"] = "batching block inventory"
 
         invalid_chain = False
 
-        if blockchain.last_block:
-            last_block_index = blockinv.index(blockchain.last_block["hash"])
-
-            blockinv = blockinv[last_block_index+1:-1]
+        if blockchain.last_block and blockchain.last_block["hash"] in blockinv:
+            blockinv = blockinv[blockchain.height:-1]
 
         # split blockinv into batches
         blockinv_batches = self.in_batches(blockinv, self.block_batch_size)
@@ -110,7 +106,7 @@ class Consensus:
                 if not block:
                     return blockchain
 
-                self.sync_status["progress"][0] = block["height"] + 1 if is_sync else None
+                self.sync_status["progress"][0] = block["height"] + 1
 
                 if not blockchain.add(block, verbose=True):
                     return blockchain
@@ -118,10 +114,9 @@ class Consensus:
             if i % 10 == 1:
                 blockchain.save()
 
-            if is_sync:
-                self.sync_status["syncing"] = True
-                self.sync_status["download_node"] = node
-                self.sync_status["progress"][1] = node_block_height
+            self.sync_status["syncing"] = True
+            self.sync_status["download_node"] = node
+            self.sync_status["progress"][1] = node_block_height
 
         self.sync_status["syncing"] = False
         self.sync_status["download_node"] = None
@@ -145,8 +140,6 @@ class Consensus:
 
     def download_missing_blocks(self, node, blockinv):
         self.blockchain = self.sync_blockchain(self.blockchain, blockinv, node)
-
-        return True
 
     def download_new_blockchain(self, node, blockinv):
         new_blockchain = Blockchain(
@@ -206,7 +199,8 @@ class Consensus:
             if not node or not node_block_height:
                 continue
 
-            if node_block_height - self.blockchain.height == 1:
+            height_difference = node_block_height - self.blockchain.height
+            if height_difference == 1:
                 if self.download_latest_block(node):
                     continue
 
@@ -214,7 +208,7 @@ class Consensus:
 
             # get a list of the  node's block hashes
             blockinv = self.get_json(node, "/blockinv")
-            
+
             # if the  node is unreachable, move on
             if not blockinv:
                 continue
@@ -222,7 +216,7 @@ class Consensus:
             if len(blockinv) < node_block_height:
                 continue
 
-            if blockinv[0] == self.blockchain.chain[0]["hash"]:
+            if blockinv[0] == self.blockchain.chain[0]["hash"] and self.blockchain.last_block["hash"] in blockinv:
                 # if there are new blocks to download, sync to the existing blockchain
                 self.download_missing_blocks(node, blockinv)
             else:
