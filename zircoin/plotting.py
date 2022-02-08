@@ -9,7 +9,7 @@ except ImportError:
     pass
 
 
-def wealth_distrobution(blockchain):
+def wealth_distribution(blockchain):
     if "matplotlib" not in sys.modules:
         logger.info(
             "Please install the matplotlib python package to use this feature.")
@@ -33,7 +33,7 @@ def wealth_distrobution(blockchain):
     ax1.pie(wallets.values(), labels=keys, autopct='%1.1f%%',
             shadow=True, startangle=90)
     ax1.axis('equal')
-    plt.title("Wealth distrobution", fontdict={
+    plt.title("Wealth distribution", fontdict={
               'family': 'sans-serif', 'color': 'black', 'size': 20}, pad=15)
     plt.show()
 

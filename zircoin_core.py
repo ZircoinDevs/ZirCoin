@@ -10,7 +10,7 @@ from zircoin.version import PROTOCOL_VERSION, NETWORKING_VERSION
 from zircoin.utils import test_hashrate
 from zircoin.messages import broadcast_transaction
 from zircoin.plotting import (
-    wealth_distrobution,
+    wealth_distribution,
     transaction_volume,
     transaction_quantity,
     coin_supply,
@@ -282,7 +282,7 @@ def menu():
         opt = input("""
 ZirCoin Graphs
 
-1) Wealth distrobution
+1) Wealth distribution
 2) Transaction Volume
 3) Transaction quantity
 4) Circulating supply
@@ -292,7 +292,7 @@ ZirCoin Graphs
 >> """)
 
         if opt == "1":
-            wealth_distrobution(blockchain)
+            wealth_distribution(blockchain)
         elif opt == "2":
             transaction_volume(blockchain)
         elif opt == "3":
