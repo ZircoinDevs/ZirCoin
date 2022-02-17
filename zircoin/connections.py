@@ -110,19 +110,10 @@ class ConnectionPool:
             return False
 
         try:
-            home = requests.get(addr, timeout=1).text
-            info = requests.get(addr + "/info", timeout=1).json()
-
-            if self.config["fullnode"]:
-                requests.post(addr + "/ping",
-                              json.dumps({"port": self.server_port}))
+            info = requests.get(addr + "/info", timeout=2).json()
 
         except self.connection_errors:
             return False  # if the node is unreachable, don't add it
-
-        # if the server is not a zircoin node, don't add it
-        if home != "ZirCoin Node":
-            return False
 
         # prevents connection to self
         if info["node_id"] == self.node_id:
@@ -144,6 +135,9 @@ class ConnectionPool:
 
         self.pool.add(addr)
 
+        if self.config["fullnode"]:
+                requests.post(addr + "/ping", json.dumps({"port": self.server_port}))
+
     def remove(self, addr):
         try:
             self.pool.remove(addr)
@@ -158,7 +152,7 @@ class ConnectionPool:
                 self.pool.remove(peer)
 
             try:
-                if requests.get(peer, timeout=1) and self.add(peer):
+                if requests.get(peer, timeout=2) and self.add(peer):
                     self.inactive_pool.remove(peer)
             except self.connection_errors:
                 continue
@@ -180,7 +174,7 @@ class ConnectionPool:
         while True:
             if len(self.pool) >= self.max_connections:
                 return False
-            
+
             start = time()
 
             for peer in self.pool.copy():
@@ -190,15 +184,16 @@ class ConnectionPool:
                 try:
                     peers = requests.get(peer + "/peers", timeout=2).json()
                 except self.connection_errors:
-                    continue
+                    try:
+                        self.pool.remove(peer)
+                    except KeyError:
+                        pass
 
                 for peer in peers:
                     self.add(peer)
 
             total_time = time() - start
-            
             sleep(max(0, (30 - total_time)))
-            
 
     def get_alive_peers(self, amount):
         self.update_pool()
